@@ -22,4 +22,13 @@ from MyApp.views import *
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^welcome/$',welcome),  #进入主页,^是正则匹配写法
+    url(r'^case_list/$',case_list),
+    url(r'^item_list/$',item_list),
+    url(r'^portlib/$',portlib),
+    url(r'^home/$',home),
+    url(r'^child/(?P<eid>.+)/(?P<oid>.*)/$',child),  #返回子页面（正则表达式写法）
+    url(r'^login/$',login),
+    url(r'^login_action/$',login_action),
+    url(r'^register_action/$',register_action),
+    url(r'^accounts/login/$',login),
 ]
