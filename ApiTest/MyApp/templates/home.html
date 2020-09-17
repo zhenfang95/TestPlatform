@@ -2,29 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <style>
+        body{
+            background: url("/static/home.jpg");
+            background-attachment: fixed;
+            background-size: cover;
+        }
+    </style>
 </head>
 <body>
     <div style="text-align: center">
-        <h1>欢迎 {{ username }} 使用接口测试平台</h1>
-        <h3>welcome to ApiTest</h3>
+        <h1>
+            <br>
+            欢迎 {{ username }} 使用接口测试平台
+        </h1>
+        <h3>welcome to use ApiTest</h3>
 
-        <div style="border: 1px solid black;width: 200px;text-align: left;margin-left: -webkit-calc(50% - 100px);padding-left: 10px">
-            <h2>如何使用？</h2>
-            1.打开左侧菜单<br>
-            2.找到要用的功能<br>
-            3.点击进入<br><br>
-        </div>
-
-        <h2>更新信息: </h2>
-        <span>项目模块管理上线，并修复已知bug</span>
-
-        <h2>反馈: </h2>
-        <span>如有问题，请发邮件至：xxx@qq.com</span> <br>
-        <span>或进入<a href="https://www.baidu.com/">本平台的优化建议</a>中进行反馈</span>
-        <br><br>
-        <img src="/static/haha.png" alt="图片丢了……" style="width: 200px">
+        <textarea id="tucao_input" cols="50" rows="10" placeholder="吐槽专用,可怒喷开发者！" style="border-radius: 5px;padding-left: 10px;box-shadow: 4px 4px 9px grey;opacity: 0.7"></textarea>
+        <br>
+        <button style="border-radius: 10px 10px 10px 10px;width: 100px;opacity: 0.7" onclick="submit()">提交</button>
 
     </div>
-
+    <script>
+        function submit() {
+            $.get('/submit/',{
+                "tucao_text":document.getElementById('tucao_input').value,
+            },function (ret) {
+                alert('提交成功！')
+            })
+        }
+    </script>
 </body>
 </html>

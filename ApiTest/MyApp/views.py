@@ -48,11 +48,6 @@ def register_action(request):
     except:
         return HttpResponse('注册失败,用户已存在……')
 
-def case_list(request):
-    return HttpResponse('测试用例列表……')
-
-def item_list(request):
-    return HttpResponse('项目列表……')
-
-def portlib(request):
-    return HttpResponse('接口库……')
+def submit(request):
+    tucao_text = request.GET['tucao_text']
+    return HttpResponse('haha')
