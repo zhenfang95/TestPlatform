@@ -31,4 +31,5 @@ urlpatterns = [
     url(r'^login_action/$',login_action),
     url(r'^register_action/$',register_action),
     url(r'^accounts/login/$',login),
+    url(r'^logout/$',logout),
 ]

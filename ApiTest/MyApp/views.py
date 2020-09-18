@@ -48,6 +48,12 @@ def register_action(request):
     except:
         return HttpResponse('注册失败,用户已存在……')
 
+#退出登录
+def logout(request):
+    from django.contrib import auth
+    auth.logout(request)
+    return HttpResponseRedirect('/login/')
+
 def case_list(request):
     return HttpResponse('测试用例列表……')
 

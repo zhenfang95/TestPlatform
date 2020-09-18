@@ -39,28 +39,35 @@
             </ul>
     </nav>
 
-    <button id="menu_btn" onclick="display_menu()" style="margin-left: 217px;background-color: #353C48;color: white;border-radius: 0px 0px 10px">隐藏</button>
+    <button id="menu_btn" onclick="display_menu()" style="margin-left: 217px;background-color: #353C48;color: white;border-radius: 0px 0px 10px"><<</button>
     <script>
         function display_menu() {
             menu = document.getElementById('navbar');
             btn = document.getElementById('menu_btn');
 
-            if( btn.innerText == '隐藏' ){
+            if( btn.innerText == '<<' ){
                 menu.style.display = 'none';
                 btn.style.marginLeft = '0px';
-                btn.innerText = '显示';
+                btn.innerText = '>>';
             }else {
                 menu.style.display = 'block';
                 btn.style.marginLeft = '217px';
-                btn.innerText = '隐藏'
+                btn.innerText = '<<'
             }
 
         }
     </script>
-    <a href="/home/">
-    <button style="float: right;height: 35px;width: 100px;background-color: #353C48;
-            color: white;border-radius: 0px 0px 0px 10px;font-size: large">💒主页</button>
-    </a>
+    <div style="float: right;">
+        <a href="/home/">
+        <button style="height: 35px;width: 100px;background-color: #353C48;
+            color: white;font-size: large">💒主页</button>
+        </a>
+        <br>
+        <a href="/logout/">
+        <button style="height: 35px;width: 100px;background-color: #353C48;
+            color: white;border-radius: 0px 0px 0px 10px;font-size: large">退出</button>
+        </a>
+    </div>
 
     <script src="/static/201908059658/js/jquery-1.11.0.min.js" type="text/javascript"></script>
         <!--include plugin js-->
