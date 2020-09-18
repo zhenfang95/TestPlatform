@@ -18,7 +18,7 @@ from django.urls import path
 from django.conf.urls import url
 from MyApp.views import *
 
-#逻辑：库函数('你的url 1'，‘你的后台函数名1 ’)
+#路由控制器，逻辑：库函数('你的url 1'，‘你的后台函数名1 ’)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^welcome/$',welcome),  #进入主页,^是正则匹配写法
@@ -30,4 +30,5 @@ urlpatterns = [
     url(r'^accounts/login/$',login),
     url(r'^logout/$',logout),
     url(r'^submit/$',submit),
+    url(r'^help/$',api_help),
 ]

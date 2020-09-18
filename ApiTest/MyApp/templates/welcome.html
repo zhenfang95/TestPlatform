@@ -19,11 +19,11 @@
                     <ul>
                         <li>
                             <a href="#">
-                                接口测试
+                                接口调试
                             </a>
                         </li>
                         <li>
-                            <a href="">
+                            <a href="/help/">
                                 帮助
                             </a>
                         </li>
@@ -91,6 +91,12 @@
 
 <script>
 $('#page1').load('/child/'+'{{ whichHTML }}/{{ oid }}/')
+</script>
+
+<script>
+    if ("{{ whichHTML }}" != 'Home.html'){
+        document.getElementById('menu_btn').click();  <!--在帮助页,菜单自动隐藏-->
+    }
 </script>
 
 </body>

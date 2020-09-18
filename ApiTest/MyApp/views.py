@@ -3,19 +3,32 @@
 from django.http import HttpResponse,HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required    #登录态检查
+from MyApp.models import *
 
 @login_required
 def welcome(request):
     return render(request,'welcome.html')
 
-#返回子页面
-def child(request,eid,oid):
-    return render(request,eid)
+
+def child_json(eid):
+    #返回表中所有超链接
+    date = DB_home_href.objects.all()
+    res = {"hrefs":date} #给前端返回一个字典（前端格式要求只是是字典）
+    return res
+
+#返回子页面,控制不同的页面返回不同的数据：数据分发器
+def child(request,eid,oid):      #eid是我们进入的html文件名字
+    if eid == 'Home.html':
+        res = child_json(eid)
+        child1 = render(request,eid,res)
+    else:
+        child1 = render(request,eid)
+    return child1
 
 #进入主页
 @login_required
 def home(request):
-    return render(request,'welcome.html',{"whichHTML": "Home.html","oid": ""})
+    return render(request,'welcome.html',{"whichHTML": "Home.html","oid": ""})   #返回主页Home.html给前端
 
 #进入登录页面
 def login(request):
@@ -54,7 +67,18 @@ def logout(request):
     auth.logout(request)
     return HttpResponseRedirect('/login/')
 
+#所用请求信息包括请求者的登陆用户名都存放在request参数中，如：user.username就是请求的用户名
+#吐槽框
 def submit(request):
-    tucao_text = request.GET['tucao_text']
-    return HttpResponse('haha')
+    tucao_text = request.GET['tucao_text'] #获取吐槽内容
+    #利用create方法创建数据库记录
+    DB_tucao.objects.create(user=request.user.username,text=tucao_text) #吐槽内容写入表中
+    return HttpResponse('提交成功！')
+
+#帮助文档
+def api_help(request):
+    return render(request,'welcome.html',{"whichHTML": "Help.html","oid": ""})
+
+
+
 
