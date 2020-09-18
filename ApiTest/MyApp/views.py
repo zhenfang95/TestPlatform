@@ -54,11 +54,7 @@ def logout(request):
     auth.logout(request)
     return HttpResponseRedirect('/login/')
 
-def case_list(request):
-    return HttpResponse('测试用例列表……')
+def submit(request):
+    tucao_text = request.GET['tucao_text']
+    return HttpResponse('haha')
 
-def item_list(request):
-    return HttpResponse('项目列表……')
-
-def portlib(request):
-    return HttpResponse('接口库……')

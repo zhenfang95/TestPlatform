@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+#管理后台：admin，密码admin123
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
