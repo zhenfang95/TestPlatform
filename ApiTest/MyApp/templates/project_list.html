@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>项目列表</title>
+</head>
+<body>
+    <h3 style="padding-left: 10px;color: #353c48">项目列表：<span style="font-size: small;color: grey;">（这里显示全部项目,您可以进入他人的项目中查看）</span></h3>
+
+    <button style="border-left: 10px solid black;border-right: 10px solid black;border-top: 0;
+    position: fixed;top: 0px;left: -webkit-calc(50% - 75px);width: 150px;height: 40px;font-size: x-large;background-color: white;color:black ;
+    border-radius: 0px 0px 10px 10px;">新增项目</button>
+
+    {# 制作一个表格展示内容 #}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>项目id</th> <th>项目名称</th> <th>创建者</th> <th>备注</th> <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in projects %}
+                <tr>
+                    <td>{{ i.id }}</td> <td>{{ i.name }}</td> <td>{{ i.user }}</td> <td>{{ i.remark }}</td> <td><button class="btn btn-success">进入</button> <button class="btn btn-danger">删除</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+</body>
+</html>

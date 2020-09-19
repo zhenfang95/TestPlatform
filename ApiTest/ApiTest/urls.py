@@ -31,4 +31,5 @@ urlpatterns = [
     url(r'^logout/$',logout),
     url(r'^submit/$',submit),
     url(r'^help/$',api_help),
+    url(r'^project_list/$',project_list),
 ]

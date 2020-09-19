@@ -9,21 +9,22 @@ from MyApp.models import *
 def welcome(request):
     return render(request,'welcome.html')
 
-
+#控制不同的页面返回不同的数据：数据分发器
 def child_json(eid):
-    #返回表中所有超链接
-    date = DB_home_href.objects.all()
-    res = {"hrefs":date} #给前端返回一个字典（前端格式要求只是是字典）
+    res={}
+    if eid == 'Home.html':
+        #返回表中所有数据
+        date = DB_home_href.objects.all()
+        res = {"hrefs":date}    #给前端返回一个字典格式
+    if eid == 'project_list.html':
+        date = DB_project.objects.all()
+        res = {'projects':date}
     return res
 
-#返回子页面,控制不同的页面返回不同的数据：数据分发器
+#返回子页面
 def child(request,eid,oid):      #eid是我们进入的html文件名字
-    if eid == 'Home.html':
-        res = child_json(eid)
-        child1 = render(request,eid,res)
-    else:
-        child1 = render(request,eid)
-    return child1
+    res = child_json(eid)
+    return render(request,eid,res)
 
 #进入主页
 @login_required
@@ -78,6 +79,9 @@ def submit(request):
 #帮助文档
 def api_help(request):
     return render(request,'welcome.html',{"whichHTML": "Help.html","oid": ""})
+
+def project_list(request):
+    return render(request,'welcome.html',{"whichHTML":"project_list.html","oid":""})
 
 
 

@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-#管理后台：admin，密码admin123
-#同步结构表并生效，依次执行：python manage.py makemigrations  python manage.py migrate
-
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
