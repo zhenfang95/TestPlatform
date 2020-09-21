@@ -10,7 +10,7 @@ def welcome(request):
     return render(request,'welcome.html')
 
 #控制不同的页面返回不同的数据：数据分发器
-def child_json(eid):
+def child_json(eid,oid=''):
     res={}
     if eid == 'Home.html':
         #返回表中所有数据
@@ -19,11 +19,14 @@ def child_json(eid):
     if eid == 'project_list.html':
         date = DB_project.objects.all()
         res = {'projects':date}
+    if eid == 'P_apis.html':
+        project_name = DB_project.objects.filter(id=oid)[0].name
+        res = {'project_name':project_name}
     return res
 
 #返回子页面
-def child(request,eid,oid):      #eid是我们进入的html文件名字
-    res = child_json(eid)
+def child(request,eid,oid):      #eid是我们进入的html文件名字,oid是用来区分数据的参数
+    res = child_json(eid,oid)
     return render(request,eid,res)
 
 #进入主页
@@ -80,9 +83,36 @@ def submit(request):
 def api_help(request):
     return render(request,'welcome.html',{"whichHTML": "Help.html","oid": ""})
 
+#项目列表
 def project_list(request):
     return render(request,'welcome.html',{"whichHTML":"project_list.html","oid":""})
 
+#删除项目
+def delete_project(request):
+    id = request.GET['id']
+    #根据id删除表中数据
+    DB_project.objects.filter(id=id).delete()   #filter()是找出所有符合的数据
+    return HttpResponse('项目已删除!')
 
+#新增项目
+def add_project(request):
+    project_name = request.GET['project_name']
+    project_remark = request.GET['project_remark']
+    #新增一条项目数据
+    DB_project.objects.create(name=project_name,remark=project_remark,user=request.user.username,other_user='')
+    return HttpResponse('项目已添加')
 
+#进入接口库
+def open_apis(request,id):
+    project_id = id
+    return render(request,'welcome.html',{"whichHTML":"P_apis.html","oid":project_id})
 
+#进入用例设置
+def open_cases(request,id):
+    project_id = id
+    return render(request,'welcome.html',{"whichHTML":"P_cases.html","oid":""})
+
+#进入项目设置
+def open_project_set(request,id):
+    project_id = id
+    return render(request,'welcome.html',{"whichHTML":"P_project_set.html","oid":""})

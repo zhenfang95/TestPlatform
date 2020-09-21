@@ -32,4 +32,9 @@ urlpatterns = [
     url(r'^submit/$',submit),
     url(r'^help/$',api_help),
     url(r'^project_list/$',project_list),
+    url(r'^delete_project/$',delete_project),
+    url(r'^add_project/$',add_project),
+    url(r'^apis/(?P<id>.*)/$',open_apis),
+    url(r'^cases/(?P<id>.*)/$',open_cases),
+    url(r'^project_set/(?P<id>.*)/$',open_project_set),
 ]
