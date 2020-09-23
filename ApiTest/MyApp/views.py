@@ -20,8 +20,14 @@ def child_json(eid,oid=''):
         date = DB_project.objects.all()
         res = {'projects':date}
     if eid == 'P_apis.html':
-        project_name = DB_project.objects.filter(id=oid)[0].name
-        res = {'project_name':project_name}
+        project = DB_project.objects.filter(id=oid)[0]
+        res = {'project':project}
+    if eid == 'P_cases.html':
+        project = DB_project.objects.filter(id=oid)[0]
+        res = {'project':project}
+    if eid == 'P_project_set.html':
+        project = DB_project.objects.filter(id=oid)[0]
+        res = {'project':project}
     return res
 
 #返回子页面
@@ -110,9 +116,9 @@ def open_apis(request,id):
 #进入用例设置
 def open_cases(request,id):
     project_id = id
-    return render(request,'welcome.html',{"whichHTML":"P_cases.html","oid":""})
+    return render(request,'welcome.html',{"whichHTML":"P_cases.html","oid":project_id})
 
 #进入项目设置
 def open_project_set(request,id):
     project_id = id
-    return render(request,'welcome.html',{"whichHTML":"P_project_set.html","oid":""})
+    return render(request,'welcome.html',{"whichHTML":"P_project_set.html","oid":project_id})
