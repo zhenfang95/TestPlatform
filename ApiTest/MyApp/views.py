@@ -28,6 +28,10 @@ def child_json(eid,oid=''):
     if eid == 'P_project_set.html':
         project = DB_project.objects.filter(id=oid)[0]
         res = {'project':project}
+    if eid == 'P_apis.html':
+        project = DB_project.objects.filter(id=oid)[0]
+        apis = DB_apis.objects.filter(project_id=oid)
+        res = {'project':project,'apis':apis}
     return res
 
 #返回子页面
@@ -98,6 +102,7 @@ def delete_project(request):
     id = request.GET['id']
     #根据id删除表中数据
     DB_project.objects.filter(id=id).delete()   #filter()是找出所有符合的数据
+    DB_apis.objects.filter(project_id=id).delete()
     return HttpResponse('项目已删除!')
 
 #新增项目
@@ -122,3 +127,48 @@ def open_cases(request,id):
 def open_project_set(request,id):
     project_id = id
     return render(request,'welcome.html',{"whichHTML":"P_project_set.html","oid":project_id})
+
+#保存项目设置
+def save_project_set(request,id):
+    project_id = id
+    name = request.GET['name']
+    remark = request.GET['remark']
+    other_user = request.GET['other_user']
+    DB_project.objects.filter(id=project_id).update(name=name,remark=remark,other_user=other_user)
+    return HttpResponse('保存成功')
+
+#保存备注
+def save_bz(request):
+    api_id = request.GET['api_id']
+    bz_value = request.GET['bz_value']
+    DB_apis.objects.filter(id=api_id).update(des=bz_value)
+    return HttpResponse('')
+
+#获取备注
+def get_bz(request):
+    api_id = request.GET['api_id']
+    bz_value = DB_apis.objects.filter(id=api_id)[0].des
+    return HttpResponse(bz_value)
+
+#保存接口
+def Api_save(request):
+    #提取所有数据
+    api_id = request.GET['api_id']
+    ts_method = request.GET['ts_method']
+    ts_url = request.GET['ts_url']
+    ts_host = request.GET['ts_host']
+    ts_header = request.GET['ts_header']
+    ts_body_method = request.GET['ts_body_method']
+    ts_api_body = request.GET['ts_api_body']
+    api_name = request.GET['api_name']
+    #保存数据
+    DB_apis.objects.filter(id=api_id).update(
+        api_method = ts_method,
+        api_url = ts_url,
+        api_header = ts_header,
+        api_host = ts_host,
+        body_method = ts_body_method,
+        api_body = ts_api_body,
+        name = api_name
+    )
+    return  HttpResponse('success')

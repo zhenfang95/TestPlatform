@@ -37,4 +37,8 @@ urlpatterns = [
     url(r'^apis/(?P<id>.*)/$',open_apis),
     url(r'^cases/(?P<id>.*)/$',open_cases),
     url(r'^project_set/(?P<id>.*)/$',open_project_set),
+    url(r'^save_project_set/(?P<id>.*)/$',save_project_set),
+    url(r'^save_bz/$',save_bz),
+    url(r'^get_bz/$',get_bz),
+    url(r'^Api_save/$',Api_save),
 ]
