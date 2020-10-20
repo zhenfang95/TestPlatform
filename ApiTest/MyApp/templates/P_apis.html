@@ -127,7 +127,7 @@ text-align: center;border: 1px solid #e7e7e7">
         </li>
         {# 发送请求 #}
         <li >
-            <button type="button" style="height: 40px;width: 120px;"
+            <button onclick="ts_send()" type="button" style="height: 40px;width: 120px;"
                     class="btn btn-default"><span style="font-size: large">Send</span></button>
         </li>
     </ul>
@@ -288,7 +288,69 @@ text-align: center;border: 1px solid #e7e7e7">
         clear_ts_api();   //进入调式弹层时清空所有输入框
         document.getElementById('ts').style.display = 'block';
         document.getElementById('ts_api_id').innerText = id;
-        document.getElementById('ts_api_name').value = name;
+
+        $.get('/get_api_data/',{
+            'api_id':id,
+        },function (ret){
+            console.log(ret)
+            //接收返回值后的动作
+            document.getElementById('ts_api_name').value = ret.name;
+            document.getElementById('ts_method').value = ret.api_method;
+            document.getElementById('ts_url').value = ret.api_url;
+            document.getElementById('ts_host').value = ret.api_host;
+            document.getElementById('ts_header').value = ret.api_header;
+            //请求体编码格式
+            var body_method = '#'+ret.body_method;  //定位到form-data
+            $("li a[href="+body_method+"]").click(); //li 标签下的a标签中 href 是这个拼接字符串的 元素执行点击click操作
+            //请求体显示
+            if (ret.body_method == 'Text'){
+                document.getElementById('raw_Text').value = ret.api_body;
+            }
+            if (ret.body_method == 'JavaScript'){
+                document.getElementById('raw_JavaScript').value = ret.api_body;
+            }
+            if (ret.body_method == 'Json'){
+                document.getElementById('raw_Json').value = ret.api_body;
+            }
+            if (ret.body_method == 'Html'){
+                document.getElementById('raw_Html').value = ret.api_body;
+            }
+            if (ret.body_method == 'Xml'){
+                document.getElementById('raw_Xml').value = ret.api_body;
+            }
+            if (ret.body_method == 'form-data'){
+                var tbody = document.getElementById('mytbody');
+                body = eval(ret.api_body);
+                for (var i=0;i<body.length;i++){    //遍历请求体列表
+                    key = body[i][0];  //拿出每一个键值对的key
+                    value = body[i][1]; //拿出每一个键值对的value
+                    var childs_tr = tbody.children;   //获取这个表格下所有的tr组成的大列表
+                    //每个tr下的children得到的是 td列表，只有两个
+                    childs_tr[i].children[0].innerText = key;  //第一个td放key
+                    childs_tr[i].children[1].innerText = value;  //第二个td放value
+                    //判断是否是最后一次遍历，决定是否点击新增参数按钮
+                    if (i<body.length-1){
+                        document.getElementById('add').click()
+                    }
+                }
+            }
+            if (ret.body_method == 'x-www-form-urlencoded'){
+                var tbody = document.getElementById('mytbody2');
+                body = eval(ret.api_body);
+                for (var i=0;i<body.length;i++){    //遍历请求体列表
+                    key = body[i][0];  //拿出每一个键值对的key
+                    value = body[i][1]; //拿出每一个键值对的value
+                    var childs_tr = tbody.children;   //获取这个表格下所有的tr组成的大列表
+                    //每个tr下的children得到的是 td列表，只有两个
+                    childs_tr[i].children[0].innerText = key;  //第一个td放key
+                    childs_tr[i].children[1].innerText = value;  //第二个td放value
+                    //判断是否是最后一次遍历，决定是否点击新增参数按钮
+                    if (i<body.length-1){
+                        document.getElementById('add2').click()
+                    }
+                }
+            }
+        })
     }
     function ts_close() {
         document.getElementById('ts').style.display = 'none';
@@ -356,6 +418,72 @@ text-align: center;border: 1px solid #e7e7e7">
             'ts_api_body':ts_api_body
         },function (ret){
             document.location.reload();
+        })
+    }
+
+    function ts_send(){
+        //获取接口所有数据
+        var api_name = document.getElementById('ts_api_name').value;
+        var ts_method = document.getElementById('ts_method').value;
+        var ts_url = document.getElementById('ts_url').value;
+        var ts_host = document.getElementById('ts_host').value;
+        var ts_header = document.getElementById('ts_header').value;
+        var ts_body_method = $('ul#myTab li[class="active"]')[0].innerText;
+        if (ts_body_method == 'none'){
+            var ts_api_body = ''
+        }
+        if (ts_body_method == 'form-data'){
+            var ts_api_body = []; //新建个空列表来存放后续数据
+            var tbody_ = $("table#mytable tbody")[0]; //获取该表格内容部分
+            var trlist = tbody_.children ; //获取下面所有tr，每个tr就是一个键值对
+            for (var i=0;i<trlist.length;i++) {
+                var tdarr = trlist[i].children; //获取tr下的两个td
+                var key = tdarr[0].innerText; //获取key
+                var value = tdarr[1].innerText; //获取value
+                ts_api_body.push([key,value]); //作为一个数组存放
+            }
+            ts_api_body = JSON.stringify(ts_api_body);  //把数组转为字符串
+        }
+        if (ts_body_method == 'x-www-form-urlencoded'){
+            var ts_api_body = []; //新建个空列表来存放后续数据
+            var tbody_ = $("table#mytable2 tbody")[0]; //获取该表格内容部分
+            var trlist = tbody_.children ; //获取下面所有tr，每个tr就是一个键值对
+            for (var i=0;i<trlist.length;i++) {
+                var tdarr = trlist[i].children; //获取tr下的两个td
+                var key = tdarr[0].innerText; //获取key
+                var value = tdarr[1].innerText; //获取value
+                ts_api_body.push([key,value]); //作为一个数组存放
+            }
+            ts_api_body = JSON.stringify(ts_api_body);  //把数组转为字符串
+        }
+        if (ts_body_method == 'Text'){
+            var ts_api_body = document.getElementById('raw_Text').value;
+        }
+        if (ts_body_method == 'JavaScript'){
+            var ts_api_body = document.getElementById('raw_JavaScript').value;
+        }
+        if (ts_body_method == 'Json'){
+            var ts_api_body = document.getElementById('raw_Json').value;
+        }
+        if (ts_body_method == 'Html'){
+            var ts_api_body = document.getElementById('raw_Html').value;
+        }
+        if (ts_body_method == 'Xml'){
+            var ts_api_body = document.getElementById('raw_Xml').value;
+        }
+        var api_id = document.getElementById('ts_api_id').innerText;  //获取到了接口id
+        $.get('/Api_send/',{
+            'api_id':api_id,
+            'api_name':api_name,
+            'ts_method':ts_method,
+            'ts_url':ts_url,
+            'ts_host':ts_host,
+            'ts_header':ts_header,
+            'ts_body_method':ts_body_method,
+            'ts_api_body':ts_api_body
+        },function (ret){
+            $("li a[href=#response]").click();
+            document.getElementById('ts_response_body').value = ret; //把返回值显示到请求体多行文本框中
         })
     }
 </script>

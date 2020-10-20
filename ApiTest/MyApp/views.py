@@ -4,6 +4,8 @@ from django.http import HttpResponse,HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required    #登录态检查
 from MyApp.models import *
+import json
+import requests
 
 @login_required
 def welcome(request):
@@ -159,8 +161,14 @@ def Api_save(request):
     ts_host = request.GET['ts_host']
     ts_header = request.GET['ts_header']
     ts_body_method = request.GET['ts_body_method']
-    ts_api_body = request.GET['ts_api_body']
     api_name = request.GET['api_name']
+    if ts_body_method == '返回体':
+        api = DB_apis.objects.filter(id=api_id)[0]
+        ts_body_method = api.last_body_method
+        ts_api_body = api.last_api_body
+    else:
+        ts_api_body = request.GET['ts_api_body']
+
     #保存数据
     DB_apis.objects.filter(id=api_id).update(
         api_method = ts_method,
@@ -172,3 +180,72 @@ def Api_save(request):
         name = api_name
     )
     return  HttpResponse('success')
+
+#获取接口数据
+def get_api_data(request):
+    api_id = request.GET['api_id']
+    api = DB_apis.objects.filter(id=api_id).values()[0]
+    return HttpResponse(json.dumps(api),content_type='application/json')  #返回json格式数据给前端
+
+#调式层发送请求
+def Api_send(request):
+    #提取所有数据
+    api_id = request.GET['api_id']
+    ts_method = request.GET['ts_method']
+    ts_url = request.GET['ts_url']
+    ts_host = request.GET['ts_host']
+    ts_header = request.GET['ts_header']
+    api_name = request.GET['api_name']
+    ts_body_method = request.GET['ts_body_method']
+    if ts_body_method == '返回体':
+        api = DB_apis.objects.filter(id=api_id)[0]
+        ts_body_method = api.last_body_method
+        ts_api_body = api.last_api_body
+        if ts_body_method in ['',None]:
+            return HttpResponse('请先选择好请求方式和请求体，再点击Send按钮发送请求')
+    else:
+        ts_api_body = request.GET['ts_api_body']
+        api = DB_apis.objects.filter(id=api_id)
+        api.update(last_body_method=ts_body_method,last_api_body=ts_api_body)
+
+    #发送请求获取返回值
+    header = json.loads(ts_header) #请求头
+    #拼接完整的url
+    if ts_host[-1] == '/' and ts_url[0] == '/':   #都有/
+        url = ts_host[:-1] + ts_url
+    elif ts_host[-1] != '/' and ts_url[0] != '/':  #都没有/
+        url = ts_host + '/' + ts_url
+    else:
+        url = ts_host + ts_url
+
+    if ts_body_method == 'none':
+        response = requests.request(ts_method.upper(), url, headers=header, data={})
+
+    elif ts_body_method == 'form-data':
+        files = []
+        payload = {}
+        for i in eval(ts_api_body):
+            payload[i[0]] = i[1]
+        response = requests.request(ts_method.upper(),url,headers=header,data=payload,files=files)
+
+    elif ts_body_method == 'x-www-form-urlencoded':
+        header['Content-Type'] = 'application/x-www-form-urlencoded'
+        payload = {}
+        for i in eval(ts_api_body):
+            payload[i[0]] = i[1]
+        response = requests.request(ts_method.upper(),url,headers=header,data=payload)
+    else:
+        if ts_body_method == 'Text':
+            header['Content-Type'] = 'text/plain'
+        elif ts_body_method == 'JavaScript':
+            header['Content-Type'] = 'text/plain'
+        elif ts_body_method == 'Json':
+            header['Content-Type'] = 'application/json'
+        elif ts_body_method == 'Html':
+            header['Content-Type'] = 'text/plain'
+        elif ts_body_method == 'Xml':
+            header['Content-Type'] = 'text/plain'
+        response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+
+    #把返回值传递给前端页面
+    return HttpResponse(response.text)
