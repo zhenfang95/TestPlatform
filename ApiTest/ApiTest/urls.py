@@ -38,9 +38,13 @@ urlpatterns = [
     url(r'^cases/(?P<id>.*)/$',open_cases),
     url(r'^project_set/(?P<id>.*)/$',open_project_set),
     url(r'^save_project_set/(?P<id>.*)/$',save_project_set),
+    url(r'^project_api_add/(?P<Pid>.*)/$',project_api_add),
+    url(r'^project_api_del/(?P<id>.*)/$',project_api_del),
     url(r'^save_bz/$',save_bz),
     url(r'^get_bz/$',get_bz),
     url(r'^Api_save/$',Api_save),
     url(r'^get_api_data/$',get_api_data),
     url(r'^Api_send/$',Api_send),
+    url(r'^copy_api/$',copy_api),
+    url(r'^error_request/$',error_request), #调用异常测试接口
 ]

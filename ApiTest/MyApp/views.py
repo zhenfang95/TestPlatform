@@ -139,6 +139,19 @@ def save_project_set(request,id):
     DB_project.objects.filter(id=project_id).update(name=name,remark=remark,other_user=other_user)
     return HttpResponse('保存成功')
 
+#新增接口
+def project_api_add(request,Pid):
+    project_id = Pid
+    DB_apis.objects.create(project_id=project_id,api_method='none')
+    return HttpResponseRedirect('/apis/%s'%project_id)
+
+#删除接口
+def project_api_del(request,id):
+    project_id = DB_apis.objects.filter(id=id)[0].project_id
+    DB_apis.objects.filter(id=id).delete()
+    return HttpResponseRedirect('/apis/%s'%project_id)
+
+
 #保存备注
 def save_bz(request):
     api_id = request.GET['api_id']
@@ -160,8 +173,9 @@ def Api_save(request):
     ts_url = request.GET['ts_url']
     ts_host = request.GET['ts_host']
     ts_header = request.GET['ts_header']
-    ts_body_method = request.GET['ts_body_method']
     api_name = request.GET['api_name']
+    ts_body_method = request.GET['ts_body_method']
+
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
         ts_body_method = api.last_body_method
@@ -197,6 +211,7 @@ def Api_send(request):
     ts_header = request.GET['ts_header']
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
+
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
         ts_body_method = api.last_body_method
@@ -248,4 +263,70 @@ def Api_send(request):
         response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
 
     #把返回值传递给前端页面
+    response.encoding = "utf-8"
+    return HttpResponse(response.text)
+
+#复制接口
+def copy_api(request):
+    api_id = request.GET['api_id']
+    #开始复制接口
+    old_api = DB_apis.objects.filter(id=api_id)[0]
+    DB_apis.objects.create(project_id=old_api.project_id,
+                           name=old_api.name+ '_copy',
+                           api_method=old_api.api_method,
+                           api_url = old_api.api_url,
+                           api_header=old_api.api_header,
+                           api_login=old_api.api_login,
+                           api_host=old_api.api_host,
+                           des=old_api.des,
+                           body_method=old_api.body_method,
+                           api_body=old_api.api_body,
+                           result=old_api.result,
+                           sign=old_api.sign,
+                           file_key=old_api.file_key,
+                           file_name=old_api.file_name,
+                           public_header=old_api.public_header,
+                           last_body_method=old_api.last_body_method,
+                           last_api_body=old_api.last_api_body
+                           )
+    return HttpResponse('')
+
+#异常值发送请求
+def error_request(request):
+    api_id = request.GET['api_id']
+    new_body = request.GET['new_body']
+    print(new_body)
+    api = DB_apis.objects.filter(id=api_id)[0]
+    method = api.api_method
+    url = api.api_url
+    host = api.api_host
+    header = api.api_header
+    body_method = api.body_method
+    header = json.loads(header)
+    if host[-1] == '/' and url[0] == '/':  # 都有/
+        url = host[:-1] + url
+    elif host[-1] != '/' and url[0] !='/': #都没有/
+        url = host+ '/' + url
+    else: #肯定有一个有/
+        url = host + url
+    if body_method == 'form-data':
+        files = []
+        payload = {}
+        for i in eval(new_body):
+            payload[i[0]] = i[1]
+            response = requests.request(method.upper(), url, headers=header, data=payload, files=files)
+    elif body_method == 'x-www-form-urlencoded':
+        header['Content-Type'] = 'application/x-www-form-urlencoded'
+        payload = {}
+        for i in eval(new_body):
+            payload[i[0]] = i[1]
+            response = requests.request(method.upper(), url, headers=header, data=payload)
+    elif body_method == 'Json':
+        header['Content-Type'] = 'text/plain'
+        response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'))
+    else:
+        return HttpResponse('非法的请求体类型')
+
+    # 把返回值传递给前端页面
+    response.encoding = "utf-8"
     return HttpResponse(response.text)
