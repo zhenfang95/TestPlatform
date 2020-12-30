@@ -38,10 +38,11 @@
                     <button class="btn btn-success" onclick="ts_show('{{ i.id }}','{{ i.name }}')">调试</button>
                     <button class="btn btn-default" onclick="open_bz('{{ i.id }}')">备注</button>
                     <button class="btn btn-default" onclick="copy_api('{{ i.id }}')">复制</button>
-                    <button class="btn btn-default" onclick="error_test('{{ i.id }}','{{ i.api_body }}','{{ i.name }}')">异常值测试</button>
+                    <button class="btn btn-default" onclick="error_test('{{ i.id }}')">异常值测试</button>
                     <button class="btn btn-danger" onclick="document.location.href='/project_api_del/{{ i.id }}/'">删除</button>
                 </div>
             </td>
+                <input type="text" id="api_error_{{ i.id }}" value="{{ i.api_body }}" style="display: none">
             </tr>
         {% endfor %}
 
@@ -554,20 +555,25 @@ color: white;padding-left: 10px;">
     value="'a','123','',' ','./?*&%^','中文'">
     <br><br>
 
-    <span>替换: username -> 123</span>
-    <textarea style="width: 99%;height: 50px;border-radius: 5px;color: black"></textarea>
-
-    <span>替换: username -> "aaa"</span>
-    <textarea style="width: 99%;height: 50px;border-radius: 5px;color: black"></textarea>
-
-    <span>替换: username -> "哈哈哈"</span>
-    <textarea style="width: 99%;height: 50px;border-radius: 5px;color: black"></textarea>
 </div>
 <input type="text" style="display: none" id="error_api_body">
 <script>
+    function error_show_response(span_text,ret) {
+        var error_div = document.getElementById('error_div'); // 声明这个请求体展示窗口
+        var s = document.createElement('span'); //创造替换标题
+        s.innerText = span_text;
+        var t = document.createElement('textarea'); //传教替换内容多行文本
+        t.style = 'width: 99%;height: 50px;border-radius: 5px;color: black;margin-bottom: 10px';
+        t.value = ret;
+        error_div.appendChild(s);
+        error_div.appendChild(t);
+    }
     function error_play() {
         api_body = document.getElementById('error_api_body').value;
         ready_error_data = document.getElementById('ready_error_data').value;
+
+        // 获取接口id
+        var api_id = document.getElementById('error_api_name').innerText ;
 
         //把预替换数据从一个大字符串，按逗号解析成数组
         var r = ready_error_data.split(',');
@@ -576,21 +582,25 @@ color: white;padding-left: 10px;">
         try {
             var s = eval(api_body);
             console.log(s)
-            if (s instanceof Array){
+            if(s instanceof Array){
                 console.log('这是数组');
-                for (var i=0;i<s.length;i++){   //第一层，判断一共请求体有几个参数就进行几次大循环
+                for(var i=0;i<s.length;i++){   //第一层，判断一共请求体有几个参数就进行几次大循环
                     for(var j=0;j<r.length;j++){
                         var new_body = []; //替身，每次新的参数循环都会重新被赋值原始s
                         $.extend(true,new_body,s);
-                        new_body[i][1] = r[j];
+                        new_body[i][1] = eval(r[j]);
                         console.log(new_body);
+
+                        var span_text = '替换: '+new_body[i][0]+'-->'+r[j];
 
                         $.get('/error_request/',{
                             'api_id':api_id,
-                            'new_body':JSON.stringify(new_body)
+                            'new_body':JSON.stringify(new_body),
+                            'span_text':span_text
                         },function (ret) {
-
-                        })
+                            res = eval(ret);
+                            error_show_response(res.span_text,res.response);
+                        });
                     }
                 }
 
@@ -607,33 +617,39 @@ color: white;padding-left: 10px;">
                     for(var j=0;j<r.length;j++){
                         var new_body = {};
                         $.extend(true,new_body,s);
-                        new_body[i] = r[j];
+                        new_body[i] = eval(r[j]);
                         console.log(new_body);
+
+                        var span_text = '替换: '+i+'-->'+r[j];
 
                         $.get('/error_request/',{
                             'api_id':api_id,
-                            'new_body':new_body
+                            'new_body':JSON.stringify(new_body),
+                            'span_text':span_text
                         },function (ret) {
-
-                        })
+                            res = eval(ret);
+                            error_show_response(res.span_text,res.response);
+                        });
                     }
                 }
             }catch (e) {
                 //若两种都不是，那就不需要做异常值测试
                 alert('当前接口的请求体类型不支持异常值测试！')
+                console.log(e)
             }
         }
         console.log(ready_error_data)
     }
-    function error_test(api_id,api_body,api_name) {
+    function error_test(api_id) {
+        var api_body = document.getElementById('api_error_'+api_id).value;
         //显示蒙层，并设置好蒙层的层级关系。让其在调式层之下其他元素之上
         document.getElementById('mengceng').style.display='block';
         document.getElementById('mengceng').style.zIndex='998';
         document.getElementById('error_div').style.zIndex='999';
         error_clean();
         document.getElementById('error_div').style.display='block';
-        document.getElementById('error_api_name').innerText = api_name;
-        document.getElementById('error_api_body').value = api_body
+        document.getElementById('error_api_name').innerText = api_id;
+        document.getElementById('error_api_body').value = api_body;
     }
     function error_close() {
         document.location.reload();

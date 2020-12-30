@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^welcome/$',welcome),  #进入主页,^是正则匹配写法
     url(r'^home/$',home),
-    url(r'^child/(?P<eid>.+)/(?P<oid>.*)/$',child),  #返回子页面（正则表达式写法）
+    url(r'^child/(?P<eid>.+)/(?P<oid>.*)/(?P<ooid>.*)/$',child),  #返回子页面（正则表达式写法）
     url(r'^login/$',login),
     url(r'^login_action/$',login_action),
     url(r'^register_action/$',register_action),
@@ -47,4 +47,8 @@ urlpatterns = [
     url(r'^Api_send/$',Api_send),
     url(r'^copy_api/$',copy_api),
     url(r'^error_request/$',error_request), #调用异常测试接口
+    url(r'^Api_send_home/$',Api_send_home),
+    url(r'^get_home_log/$',get_home_log),
+    url(r'^get_api_log_home/$',get_api_log_home),
+    url(r'^home_log/(?P<log_id>.*)/$',home),  #再次进入首页，这次需带着请求数据
 ]

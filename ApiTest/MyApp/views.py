@@ -12,12 +12,19 @@ def welcome(request):
     return render(request,'welcome.html')
 
 #控制不同的页面返回不同的数据：数据分发器
-def child_json(eid,oid=''):
+def child_json(eid,oid='',ooid=''):
     res={}
     if eid == 'Home.html':
         #返回表中所有数据
         date = DB_home_href.objects.all()
-        res = {"hrefs":date}    #给前端返回一个字典格式
+        home_log = DB_apis_log.objects.filter(user_id=oid)[::-1]
+        # 给前端返回一个字典格式
+        if ooid == '':
+            res = {"hrefs":date,"home_log":home_log}
+        else:
+            log = DB_apis_log.objects.filter(id=ooid)[0]
+            res = {"hrefs":date,"home_log":home_log,"log":log}
+
     if eid == 'project_list.html':
         date = DB_project.objects.all()
         res = {'projects':date}
@@ -37,14 +44,14 @@ def child_json(eid,oid=''):
     return res
 
 #返回子页面
-def child(request,eid,oid):      #eid是我们进入的html文件名字,oid是用来区分数据的参数
-    res = child_json(eid,oid)
+def child(request,eid,oid,ooid):      #eid是我们进入的html文件名字,oid是用来区分数据的参数
+    res = child_json(eid,oid,ooid)
     return render(request,eid,res)
 
 #进入主页
 @login_required
-def home(request):
-    return render(request,'welcome.html',{"whichHTML": "Home.html","oid": ""})   #返回主页Home.html给前端
+def home(request,log_id=''):
+    return render(request,'welcome.html',{"whichHTML": "Home.html","oid": request.user.id,"ooid":log_id})   #返回主页Home.html给前端
 
 #进入登录页面
 def login(request):
@@ -224,7 +231,10 @@ def Api_send(request):
         api.update(last_body_method=ts_body_method,last_api_body=ts_api_body)
 
     #发送请求获取返回值
-    header = json.loads(ts_header) #请求头
+    try:
+        header = json.loads(ts_header) #请求头
+    except:
+        return HttpResponse('请求头不符合json格式')
     #拼接完整的url
     if ts_host[-1] == '/' and ts_url[0] == '/':   #都有/
         url = ts_host[:-1] + ts_url
@@ -232,39 +242,41 @@ def Api_send(request):
         url = ts_host + '/' + ts_url
     else:
         url = ts_host + ts_url
+    try:
+        if ts_body_method == 'none':
+            response = requests.request(ts_method.upper(), url, headers=header, data={})
 
-    if ts_body_method == 'none':
-        response = requests.request(ts_method.upper(), url, headers=header, data={})
+        elif ts_body_method == 'form-data':
+            files = []
+            payload = {}
+            for i in eval(ts_api_body):
+                payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(),url,headers=header,data=payload,files=files)
 
-    elif ts_body_method == 'form-data':
-        files = []
-        payload = {}
-        for i in eval(ts_api_body):
-            payload[i[0]] = i[1]
-        response = requests.request(ts_method.upper(),url,headers=header,data=payload,files=files)
+        elif ts_body_method == 'x-www-form-urlencoded':
+            header['Content-Type'] = 'application/x-www-form-urlencoded'
+            payload = {}
+            for i in eval(ts_api_body):
+                payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(),url,headers=header,data=payload)
+        else:
+            if ts_body_method == 'Text':
+                header['Content-Type'] = 'text/plain'
+            elif ts_body_method == 'JavaScript':
+                header['Content-Type'] = 'text/plain'
+            elif ts_body_method == 'Json':
+                header['Content-Type'] = 'application/json'
+            elif ts_body_method == 'Html':
+                header['Content-Type'] = 'text/plain'
+            elif ts_body_method == 'Xml':
+                header['Content-Type'] = 'text/plain'
+            response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
 
-    elif ts_body_method == 'x-www-form-urlencoded':
-        header['Content-Type'] = 'application/x-www-form-urlencoded'
-        payload = {}
-        for i in eval(ts_api_body):
-            payload[i[0]] = i[1]
-        response = requests.request(ts_method.upper(),url,headers=header,data=payload)
-    else:
-        if ts_body_method == 'Text':
-            header['Content-Type'] = 'text/plain'
-        elif ts_body_method == 'JavaScript':
-            header['Content-Type'] = 'text/plain'
-        elif ts_body_method == 'Json':
-            header['Content-Type'] = 'application/json'
-        elif ts_body_method == 'Html':
-            header['Content-Type'] = 'text/plain'
-        elif ts_body_method == 'Xml':
-            header['Content-Type'] = 'text/plain'
-        response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
-
-    #把返回值传递给前端页面
-    response.encoding = "utf-8"
-    return HttpResponse(response.text)
+        #把返回值传递给前端页面
+        response.encoding = "utf-8"
+        return HttpResponse(response.text)
+    except Exception as e:
+        return HttpResponse(str(e))
 
 #复制接口
 def copy_api(request):
@@ -295,38 +307,150 @@ def copy_api(request):
 def error_request(request):
     api_id = request.GET['api_id']
     new_body = request.GET['new_body']
-    print(new_body)
+    span_text = request.GET['span_text']
     api = DB_apis.objects.filter(id=api_id)[0]
     method = api.api_method
     url = api.api_url
     host = api.api_host
     header = api.api_header
     body_method = api.body_method
-    header = json.loads(header)
+    try:
+        header = json.loads(header) #请求头
+    except:
+        return HttpResponse('请求头不符合json格式')
+
     if host[-1] == '/' and url[0] == '/':  # 都有/
         url = host[:-1] + url
     elif host[-1] != '/' and url[0] !='/': #都没有/
         url = host+ '/' + url
     else: #肯定有一个有/
         url = host + url
-    if body_method == 'form-data':
-        files = []
-        payload = {}
-        for i in eval(new_body):
-            payload[i[0]] = i[1]
-            response = requests.request(method.upper(), url, headers=header, data=payload, files=files)
-    elif body_method == 'x-www-form-urlencoded':
-        header['Content-Type'] = 'application/x-www-form-urlencoded'
-        payload = {}
-        for i in eval(new_body):
-            payload[i[0]] = i[1]
-            response = requests.request(method.upper(), url, headers=header, data=payload)
-    elif body_method == 'Json':
-        header['Content-Type'] = 'text/plain'
-        response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'))
-    else:
-        return HttpResponse('非法的请求体类型')
+    try:
+        if body_method == 'form-data':
+            files = []
+            payload = {}
+            for i in eval(new_body):
+                payload[i[0]] = i[1]
+                response = requests.request(method.upper(), url, headers=header, data=payload, files=files)
+        elif body_method == 'x-www-form-urlencoded':
+            header['Content-Type'] = 'application/x-www-form-urlencoded'
+            payload = {}
+            for i in eval(new_body):
+                payload[i[0]] = i[1]
+                response = requests.request(method.upper(), url, headers=header, data=payload)
+        elif body_method == 'Json':
+            header['Content-Type'] = 'text/plain'
+            response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'))
+        else:
+            return HttpResponse('非法的请求体类型')
 
-    # 把返回值传递给前端页面
-    response.encoding = "utf-8"
-    return HttpResponse(response.text)
+        # 把返回值传递给前端页面
+        response.encoding = "utf-8"
+        res_json = {"response":response.text,"span_text":span_text}
+        return HttpResponse(json.dumps(res_json),content_type='application/json')
+    except:
+        res_json = {"response":'接口未通，请重新请求', "span_text":span_text}
+        return HttpResponse(json.dumps(res_json), content_type='application/json')
+
+#首页发送请求
+def Api_send_home(request):
+    #提取所有数据
+    ts_method = request.GET['ts_method']
+    ts_url = request.GET['ts_url']
+    ts_host = request.GET['ts_host']
+    ts_header = request.GET['ts_header']
+    ts_body_method = request.GET['ts_body_method']
+    ts_api_body = request.GET['ts_api_body']
+    # 发送请求获取返回值
+    try:
+        header = json.loads(ts_header)  # 处理header
+    except:
+        return HttpResponse('请求头不符合json格式！')
+
+    # 写入到数据库请求记录表中
+    DB_apis_log.objects.create(user_id=request.user.id,
+                               api_method=ts_method,
+                               api_url=ts_url,
+                               api_header=ts_header,
+                               api_host=ts_host,
+                               body_method=ts_body_method,
+                               api_body=ts_api_body,
+                               )
+
+    # 拼接完整url
+    if ts_host[-1] == '/' and ts_url[0] == '/':  # 都有/
+        url = ts_host[:-1] + ts_url
+    elif ts_host[-1] != '/' and ts_url[0] != '/':  # 都没有/
+        url = ts_host + '/' + ts_url
+    else:  # 肯定有一个有/
+        url = ts_host + ts_url
+    try:
+        if ts_body_method == 'none':
+            response = requests.request(ts_method.upper(), url, headers=header, data={})
+
+        elif ts_body_method == 'form-data':
+            files = []
+            payload = {}
+            for i in eval(ts_api_body):
+                payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload, files=files)
+
+        elif ts_body_method == 'x-www-form-urlencoded':
+            header['Content-Type'] = 'application/x-www-form-urlencoded'
+            payload = {}
+            for i in eval(ts_api_body):
+                payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+
+        elif ts_body_method == 'GraphQL':
+            header['Content-Type'] = 'application/json'
+            query = ts_api_body.split('*WQRF*')[0]
+            graphql = ts_api_body.split('*WQRF*')[1]
+            try:
+                int(graphql)
+            except:
+                graphql = '{}'
+            payload = '{"query":"%s","variables":%s}' % (query, graphql)
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+
+
+        else:  # 这时肯定是raw的五个子选项：
+            if ts_body_method == 'Text':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'JavaScript':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'Json':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'Html':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'Xml':
+                header['Content-Type'] = 'text/plain'
+            response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+
+        # 把返回值传递给前端页面
+        response.encoding = "utf-8"
+
+        #DB_host.objects.update_or_create(host=ts_host)
+
+        return HttpResponse(response.text)
+    except Exception as e:
+        return HttpResponse(str(e))
+
+#首页获取请求记录
+def get_home_log(request):
+    user_id = request.user.id
+    all_logs = DB_apis_log.objects.filter(user_id=user_id)
+    ret = {"all_logs":list(all_logs.values("id","api_method","api_host","api_url"))[::-1] }
+    return HttpResponse(json.dumps(ret),content_type='application/json')
+
+#获取完整单一的请求记录数据
+def get_api_log_home(request):
+    log_id = request.GET['log_id']
+    log = DB_apis_log.objects.filter(id=log_id)
+    ret = {"log":list(log.values())[0]}
+    print(ret)
+    return HttpResponse(json.dumps(ret),content_type='application/json')
