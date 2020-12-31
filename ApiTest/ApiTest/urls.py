@@ -51,4 +51,5 @@ urlpatterns = [
     url(r'^get_home_log/$',get_home_log),
     url(r'^get_api_log_home/$',get_api_log_home),
     url(r'^home_log/(?P<log_id>.*)/$',home),  #再次进入首页，这次需带着请求数据
+    url(r'^add_case/(?P<eid>.*)/$',add_case),
 ]

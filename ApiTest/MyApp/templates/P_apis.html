@@ -26,7 +26,7 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>id</th> <th style="width: 40%">接口名称</th> <th style="width: 20%">url</th> <th style="width: 350px">操作</th>
+            <th style="width: 10%">id</th><th style="width: 30%">接口名称</th><th style="width: 30%">url</th><th style="width: 50px">操作</th>
         </tr>
     </thead>
     <tbody>
@@ -144,7 +144,7 @@ text-align: center;border: 1px solid #e7e7e7">
         </li>
         <li >
             <button type="button" style="height: 40px;width: 60px;"
-                    class="btn btn-default"><span>Clear</span></button>
+                    class="btn btn-default" onclick="clearinput1()"><span>Clear</span></button>
         </li>
     </ul>
 
@@ -157,7 +157,7 @@ text-align: center;border: 1px solid #e7e7e7">
         </li>
         <li >
             <button type="button" style="height: 40px;width: 60px;"
-                    class="btn btn-default"><span>Clear</span></button>
+                    class="btn btn-default" onclick="clearinput2()"><span>Clear</span></button>
         </li>
     </ul>
 
@@ -666,6 +666,14 @@ color: white;padding-left: 10px;">
             '    <input id="ready_error_data" type="text" style="color: black;border-radius: 5px;width: 99%"\n' +
             '    value="\'a\',\'123\',\'\',\' \',\'./?*&%^\',\'中文\'">\n' +
             '    <br><br>'
+    }
+
+    function clearinput1() {
+        $('#ts_host').val('')
+    }
+
+    function clearinput2() {
+        $('#ts_header').val('')
     }
 </script>
 

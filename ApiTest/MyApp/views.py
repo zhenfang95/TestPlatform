@@ -41,6 +41,11 @@ def child_json(eid,oid='',ooid=''):
         project = DB_project.objects.filter(id=oid)[0]
         apis = DB_apis.objects.filter(project_id=oid)
         res = {'project':project,'apis':apis}
+    if eid == 'P_cases.html':
+        project = DB_project.objects.filter(id=oid)[0]
+        Cases = DB_cases.objects.filter(project_id=oid)
+        res = {"project":project,"Cases":Cases}
+
     return res
 
 #返回子页面
@@ -454,3 +459,8 @@ def get_api_log_home(request):
     ret = {"log":list(log.values())[0]}
     print(ret)
     return HttpResponse(json.dumps(ret),content_type='application/json')
+
+#增加用例
+def add_case(request,eid):
+    DB_cases.objects.create(project_id=eid,name='')
+    return HttpResponseRedirect('/cases/%s/'%eid)

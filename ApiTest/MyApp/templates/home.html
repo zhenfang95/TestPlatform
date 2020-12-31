@@ -58,7 +58,7 @@
              <li >
                 <button type="button"
                         style="height: 40px;width: 60px;"
-                        class="btn btn-default"><span>Clear</span></button>
+                        class="btn btn-default" onclick="clearinput1()"><span>Clear</span></button>
             </li>
         </ul>
         <br><br><br>
@@ -70,7 +70,7 @@
              <li >
                 <button type="button"
                         style="height: 40px;width: 60px;"
-                        class="btn btn-default"><span>Clear</span></button>
+                        class="btn btn-default" onclick="clearinput2()"><span>Clear</span></button>
             </li>
         </ul>
         <br><br><br>
@@ -375,6 +375,16 @@
 <div id="shu" style="width: 2px;background-color: #262c2c;position: absolute;top: 70px;left:340px;">
     &nbsp;
 </div>
+<script>
+    function clearinput1() {
+        $('#ts_host').val('')
+    }
+
+    function clearinput2() {
+        $('#ts_header').val('')
+    }
+</script>
+
 <script>
     var h = document.documentElement.clientHeight;
     document.getElementById('shu').style.height = (h-85).toString() + 'px';
