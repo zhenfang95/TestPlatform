@@ -36,10 +36,10 @@
             <td>
                 <div class="btn-group" style="z-index: 0">
                     <button class="btn btn-success" onclick="">运行</button>
-                    <button class="btn btn-default" onclick="">设置</button>
+                    <button class="btn btn-default" onclick="show_small('{{ i.id }}','{{ i.name }}')">设置</button>
                     <button class="btn btn-default" onclick="">查看报告</button>
-                    <button class="btn btn-default" onclick="">复制</button>
-                    <button class="btn btn-danger" onclick="">删除</button>
+                    <a href="/copy_case/{{ project.id }}/{{ i.id }}/"><button class="btn btn-default" onclick="">复制</button></a>
+                    <a href="/del_case/{{ project.id }}/{{ i.id }}/"><button class="btn btn-danger" onclick="">删除</button></a>
                 </div>
             </td>
             </tr>
@@ -47,6 +47,85 @@
     </tbody>
 </table>
 <a href="/add_case/{{ project.id }}/"><button style="margin-left: 10px" class="btn btn-primary">新增用例</button></a>
+{# 小用例列表 #}
+<div id="left_div" style="background-color: white;border: 1px solid black;z-index: 2;display: none;width: 48%;height: 100%;
+                          text-align: center;position: absolute;right: 100%;top:0px;overflow-y: visible">
+    <button class="btn btn-default" onclick="add_new_step()">新增小用例接口</button>
+    <button class="btn btn-default">新增登录态接口</button>
+    <button class="btn btn-danger" style="float: right" onclick="close_left_div()">关闭</button>
+    <div id="small_list">
+
+    </div>
+    <p style="position: absolute;bottom: 0;left: 5px">
+        用例id：<span id="Case_id"></span>
+        用例名称：<span id="Case_name"></span>
+    </p>
+</div>
+
+<script>
+    function close_left_div(){
+        $("#left_div").css("display","none")
+    }
+    function add_new_step() {
+        var Case_id = document.getElementById('Case_id').innerText
+        $.get("/add_new_step/",{
+            "Case_id":Case_id,
+        },function (ret){
+            refresh_left_div(Case_id);
+        })
+    }
+    function refresh_left_div(case_id) {
+        // 刷新小用例列表专用
+        var d = document.getElementById('small_list');
+        d.innerHTML = '';  //清空旧数据
+        $.get('/get_small/',{
+            'case_id':case_id
+        },function (ret) {
+            //开始解析ret,并展现。
+            res = eval(ret);
+            all_steps = res.all_steps;
+            for(var i=0;i<all_steps.length;i++){
+                //这里写 生成小用例步骤的button代码
+                var bu = document.createElement('button');
+                bu.style = 'margin-top: 5px;width: 90%;background-color: #f5f3f3;';
+                bu.className = 'btn btn-defaul';
+                bu.innerText = all_steps[i].index+' - '+all_steps[i].name;
+                bu.id = 'step_btn_'+all_steps[i].id;
+                //小步骤的删除按钮
+                var del = document.createElement('button');
+                del.className ='btn btn-default';
+                del.style.fontSize = 'xx-small';
+                del.innerText = 'delete';
+                del.style.height = '28px';
+                del.style.cssFloat='right';
+                del.style.marginTop='8px';
+                del.idd = all_steps[i].id;
+                del.onclick = function(){
+                    $.get('/delete_step/'+this.idd+'/',{
+                },function (ret) {
+                        refresh_left_div(document.getElementById('Case_id').innerText)
+                    })
+                };
+                d.appendChild(bu);
+                d.appendChild(del);
+            }
+        })
+    }
+    function show_small(case_id,case_name) {
+        if (document.getElementById('left_div').style.display == 'none'){
+            $("#left_div").css("display","block");
+            $("#left_div").animate({right:'52%'},'fast');
+        }else {
+            $("#left_div").css("display","none");
+            $("#left_div").animate({right:'100%'},'fast');
+            $("#left_div").css("display","block");
+            $("#left_div").animate({right:'52%'},'fast');
+        }
+        document.getElementById('Case_id').innerText = case_id;
+        document.getElementById('Case_name').innerText = case_name;
+        refresh_left_div(case_id)
+    }
+</script>
 
 </body>
 </html>

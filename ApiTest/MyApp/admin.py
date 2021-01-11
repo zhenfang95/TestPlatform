@@ -17,4 +17,5 @@ admin.site.register(DB_project)
 admin.site.register(DB_apis)
 admin.site.register(DB_apis_log)
 admin.site.register(DB_cases)
+admin.site.register(DB_step)
 

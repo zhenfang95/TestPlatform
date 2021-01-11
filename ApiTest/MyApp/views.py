@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required    #登录态检查
 from MyApp.models import *
 import json
 import requests
+from django.views.decorators.csrf import csrf_exempt
 
 @login_required
 def welcome(request):
@@ -53,10 +54,16 @@ def child(request,eid,oid,ooid):      #eid是我们进入的html文件名字,oid
     res = child_json(eid,oid,ooid)
     return render(request,eid,res)
 
+#获取公共参数
+def glodict(request):
+    userimg = str(request.user.id) + '.png'
+    res = {"username":request.user.username,"userimg":userimg}
+    return res
+
 #进入主页
 @login_required
 def home(request,log_id=''):
-    return render(request,'welcome.html',{"whichHTML": "Home.html","oid": request.user.id,"ooid":log_id})   #返回主页Home.html给前端
+    return render(request,'welcome.html',{"whichHTML": "Home.html","oid": request.user.id,"ooid":log_id,**glodict(request)})   #返回主页Home.html给前端
 
 #进入登录页面
 def login(request):
@@ -105,18 +112,22 @@ def submit(request):
 
 #帮助文档
 def api_help(request):
-    return render(request,'welcome.html',{"whichHTML": "Help.html","oid": ""})
+    return render(request,'welcome.html',{"whichHTML": "Help.html","oid": "",**glodict(request)})
 
 #项目列表
 def project_list(request):
-    return render(request,'welcome.html',{"whichHTML":"project_list.html","oid":""})
+    return render(request,'welcome.html',{"whichHTML":"project_list.html","oid":"",**glodict(request)})
 
 #删除项目
 def delete_project(request):
     id = request.GET['id']
     #根据id删除表中数据
     DB_project.objects.filter(id=id).delete()   #filter()是找出所有符合的数据
-    DB_apis.objects.filter(project_id=id).delete()
+    DB_apis.objects.filter(project_id=id).delete()  #删除项目下所有接口
+    all_case = DB_cases.objects.filter(project_id=id)
+    for i in all_case:
+        DB_step.objects.filter(Case_id=i.id).delete() #删除用例步骤
+        i.delete() #用例删除自己
     return HttpResponse('项目已删除!')
 
 #新增项目
@@ -130,17 +141,17 @@ def add_project(request):
 #进入接口库
 def open_apis(request,id):
     project_id = id
-    return render(request,'welcome.html',{"whichHTML":"P_apis.html","oid":project_id})
+    return render(request,'welcome.html',{"whichHTML":"P_apis.html","oid":project_id,**glodict(request)})
 
 #进入用例设置
 def open_cases(request,id):
     project_id = id
-    return render(request,'welcome.html',{"whichHTML":"P_cases.html","oid":project_id})
+    return render(request,'welcome.html',{"whichHTML":"P_cases.html","oid":project_id,**glodict(request)})
 
 #进入项目设置
 def open_project_set(request,id):
     project_id = id
-    return render(request,'welcome.html',{"whichHTML":"P_project_set.html","oid":project_id})
+    return render(request,'welcome.html',{"whichHTML":"P_project_set.html","oid":project_id,**glodict(request)})
 
 #保存项目设置
 def save_project_set(request,id):
@@ -457,10 +468,61 @@ def get_api_log_home(request):
     log_id = request.GET['log_id']
     log = DB_apis_log.objects.filter(id=log_id)
     ret = {"log":list(log.values())[0]}
-    print(ret)
     return HttpResponse(json.dumps(ret),content_type='application/json')
 
 #增加用例
 def add_case(request,eid):
     DB_cases.objects.create(project_id=eid,name='')
     return HttpResponseRedirect('/cases/%s/'%eid)
+
+#删除用例
+def del_case(request,eid,oid):
+    DB_cases.objects.filter(id=oid).delete()
+    DB_step.objects.filter(Case_id=oid).delete()
+    return HttpResponseRedirect('/cases/%s/'%eid)
+
+#复制用例
+def copy_case(request,eid,oid):
+    old_case = DB_cases.objects.filter(id=oid)[0]
+    DB_cases.objects.create(project_id=old_case.project_id, name=old_case.name+'_副本')
+    return HttpResponseRedirect('/cases/%s/'%eid)
+
+#获取小用例步骤数据
+def get_small(request):
+    case_id = request.GET['case_id']
+    steps = DB_step.objects.filter(Case_id=case_id).order_by('index')
+    ret = {"all_steps":list(steps.values("index","id","name"))}
+    return HttpResponse(json.dumps(ret),content_type='application/json')
+
+# 上传用户头像
+@csrf_exempt #增加装饰器，作用是跳过 csrf 中间件的保护
+def user_upload(request):
+    print('哈哈哈')
+    file = request.FILES.get("fileUpload",None) # 靠name获取上传的文件，如果没有，避免报错，设置成None
+    if not file:
+        return HttpResponseRedirect('/home/') #如果没有则返回到首页
+    new_name = str(request.user.id) + '.png' #设置好这个新图片的名字
+    destination = open("MyApp/static/user_img/"+new_name, 'wb+')  # 打开特定的文件进行二进制的写操作
+    for chunk in file.chunks():  # 分块写入文件
+        destination.write(chunk)
+    destination.close()
+    return HttpResponseRedirect('/home/') #返回到首页
+
+#新增小步骤
+def add_new_step(request):
+    Case_id = request.GET['Case_id']
+    all_len = len(DB_step.objects.filter(Case_id=Case_id))
+    DB_step.objects.create(Case_id=Case_id, name='我是新步骤',index=all_len+1)
+    return HttpResponse('')
+
+#删除小步骤
+def delete_step(request,eid):
+    step = DB_step.objects.filter(id=eid)[0] #获取待删除的step
+    index = step.index
+    Case_id = step.Case_id
+    step.delete()
+    for i in DB_step.objects.filter(Case_id=Case_id).filter(index__gt=index):
+        i.index -= 1 #执行顺序自减1
+        i.save()
+
+    return HttpResponse('')

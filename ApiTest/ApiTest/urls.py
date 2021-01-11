@@ -52,4 +52,10 @@ urlpatterns = [
     url(r'^get_api_log_home/$',get_api_log_home),
     url(r'^home_log/(?P<log_id>.*)/$',home),  #再次进入首页，这次需带着请求数据
     url(r'^add_case/(?P<eid>.*)/$',add_case),
+    url(r'^del_case/(?P<eid>.*)/(?P<oid>.*)/$',del_case),
+    url(r'^copy_case/(?P<eid>.*)/(?P<oid>.*)/$',copy_case),
+    url(r'^get_small/$',get_small),
+    url(r'^user_upload/$',user_upload),
+    url(r'^add_new_step/$',add_new_step),
+    url(r'^delete_step/(?P<eid>.*)/$',delete_step),
 ]
