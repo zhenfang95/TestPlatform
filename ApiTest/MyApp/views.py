@@ -45,7 +45,8 @@ def child_json(eid,oid='',ooid=''):
     if eid == 'P_cases.html':
         project = DB_project.objects.filter(id=oid)[0]
         Cases = DB_cases.objects.filter(project_id=oid)
-        res = {"project":project,"Cases":Cases}
+        apis = DB_apis.objects.filter(project_id=oid)
+        res = {"project":project,"Cases":Cases,"apis":apis}
 
     return res
 
