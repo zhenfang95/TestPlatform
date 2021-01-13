@@ -58,4 +58,9 @@ urlpatterns = [
     url(r'^user_upload/$',user_upload),
     url(r'^add_new_step/$',add_new_step),
     url(r'^delete_step/(?P<eid>.*)/$',delete_step),
+    url(r'^get_step/$',get_step),
+    url(r'^save_step/$',save_step),
+    url(r'^step_get_api/$',step_get_api),
+    url(r'^Run_Case/$',Run_Case),
+    url(r'^look_report/(?P<eid>.*)/$',look_report),
 ]
