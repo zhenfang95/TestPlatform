@@ -39,8 +39,12 @@ def child_json(eid,oid='',ooid=''):
         project = DB_project.objects.filter(id=oid)[0]
         apis = DB_apis.objects.filter(project_id=oid)
         for i in apis:
-            i.short_url = i.api_url.split('?')[0][:50]
-        res = {'project':project,'apis':apis}
+            try:
+                i.short_url = i.api_url.split('?')[0][:50]
+            except:
+                i.short_url = ''
+        project_header = DB_project_header.objects.filter(project_id=oid)
+        res = {'project':project,'apis':apis,'project_header':project_header}
     if eid == 'P_cases.html':
         project = DB_project.objects.filter(id=oid)[0]
         Cases = DB_cases.objects.filter(project_id=oid)
@@ -165,7 +169,7 @@ def save_project_set(request,id):
 #新增接口
 def project_api_add(request,Pid):
     project_id = Pid
-    DB_apis.objects.create(project_id=project_id,api_method='none')
+    DB_apis.objects.create(project_id=project_id,api_method='none',api_url='')
     return HttpResponseRedirect('/apis/%s'%project_id)
 
 #删除接口
@@ -198,6 +202,7 @@ def Api_save(request):
     ts_header = request.GET['ts_header']
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
+    ts_project_headers = request.GET['ts_project_headers']
 
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
@@ -214,7 +219,8 @@ def Api_save(request):
         api_host = ts_host,
         body_method = ts_body_method,
         api_body = ts_api_body,
-        name = api_name
+        name = api_name,
+        public_header = ts_project_headers
     )
     return  HttpResponse('success')
 
@@ -543,6 +549,7 @@ def save_step(request):
     step_url = request.GET['step_url']
     step_host = request.GET['step_host']
     step_header = request.GET['step_header']
+    mock_res = request.GET['mock_res']
     step_body_method = request.GET['step_body_method']
     step_api_body = request.GET['step_api_body']
     get_path=request.GET['get_path']
@@ -557,6 +564,7 @@ def save_step(request):
                                               api_url=step_url,
                                               api_host=step_host,
                                               api_header=step_header,
+                                              mock_res=mock_res,
                                               api_body_method=step_body_method,
                                               api_body=step_api_body,
                                               get_path=get_path,
@@ -587,5 +595,28 @@ def Run_Case(request):
 #查看测试报告
 def look_report(request,eid):
     Case_id = eid
-
     return render(request,'Reports/%s.html'%Case_id)
+
+#保存项目公共请求头
+def save_project_header(request):
+    project_id = request.GET['project_id']
+    req_names = request.GET['req_names']
+    req_keys = request.GET['req_keys']
+    req_values = request.GET['req_values']
+    req_ids = request.GET['req_ids']
+    names = req_names.split(',')
+    keys = req_keys.split(',')
+    values = req_values.split(',')
+    ids = req_ids.split(',')
+    for i in range(len(ids)):
+        if names[i] != '':
+            if ids[i] == 'new':
+                DB_project_header.objects.create(project_id=project_id,name=names[i],key=keys[i],value=values[i])
+            else:
+                DB_project_header.objects.filter(id=ids[i]).update(name=names[i],key=keys[i],value=values[i])
+        else:
+            try:
+                DB_project_header.objects.filter(id=ids[i]).delete()
+            except:
+                pass
+    return HttpResponse('')

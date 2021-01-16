@@ -63,4 +63,5 @@ urlpatterns = [
     url(r'^step_get_api/$',step_get_api),
     url(r'^Run_Case/$',Run_Case),
     url(r'^look_report/(?P<eid>.*)/$',look_report),
+    url(r'^save_project_header/$',save_project_header),
 ]

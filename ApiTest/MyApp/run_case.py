@@ -19,81 +19,86 @@ class Test(unittest.TestCase):
         assert_zz= step.assert_zz
         assert_qz= step.assert_qz
         assert_path= step.assert_path
+        mock_res = step.mock_res
 
-        #检查是否需要进行替换占位符的
-        rlist_url = re.findall(r"##(.*?)##",api_url)
-        for i in rlist_url:
-            api_url = api_url.replace("##"+i+"##",str(eval(i)))
-            
-        rlist_header = re.findall(r"##(.*?)##",api_header)
-        for i in rlist_header:
-            api_header = api_header.replace("##" + i + "##", repr(str(eval(i))))
-
-        if api_body_method == 'none':
-            pass
-        elif api_body_method == 'form-data' and api_body_method == 'x-www-form-urlencoded':
-            rlist_body = re.findall(r"##(.*?)##",api_body)
-            for i in rlist_body:
-                api_body = api_body.replace("##"+i+"##", str(eval(i)))
-        elif api_body_method == 'Json':
-            rlist_body = re.findall(r"##(.*?)##", api_body)
-            for i in rlist_body:
-                api_body = api_body.replace("##"+i+"##", repr(eval(i)))
+        #如果mock有值，则不进行接口请求，直接返回mock值
+        if mock_res not in ['',None,'None']:
+            res = mock_res
         else:
-            rlist_body = re.findall(r"##(.*?)##", api_body)
-            for i in rlist_body:
-                api_body = api_body.replace("##" + i + "##", str(eval(i)))
+            #检查是否需要进行替换占位符的（接口之间的依赖，通过##进行引用上个接口的参数，如：##qid##）
+            rlist_url = re.findall(r"##(.*?)##",api_url)
+            for i in rlist_url:
+                api_url = api_url.replace("##"+i+"##",str(eval(i)))
 
-        print('【host】:',api_host)
-        print('【url】:',api_url)
-        print('【header】:',api_header)
-        print('【method】:',api_method)
-        print('【body_method】:',api_body_method)
-        print('【body】:',api_body)
+            rlist_header = re.findall(r"##(.*?)##",api_header)
+            for i in rlist_header:
+                api_header = api_header.replace("##" + i + "##", repr(str(eval(i))))
 
-        #实际发送请求
-        try:
-            header = json.loads(api_header)
-        except:
-            header = eval(api_header)
-        # 拼接完整的url
-        if api_host[-1] == '/' and api_url[0] == '/':  # 都有/
-            url = api_host[:-1] + api_url
-        elif api_host[-1] != '/' and api_url[0] != '/':  # 都没有/
-            url = api_host + '/' + api_url
-        else:
-            url = api_host + api_url
-
-        if api_body_method == 'none':
-            response = requests.request(api_method.upper(), url, headers=header, data={})
-
-        elif api_body_method == 'form-data':
-            files = []
-            payload = {}
-            for i in eval(api_body):
-                payload[i[0]] = i[1]
-            response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files)
-
-        elif api_body_method == 'x-www-form-urlencoded':
-            header['Content-Type'] = 'application/x-www-form-urlencoded'
-            payload = {}
-            for i in eval(api_body):
-                payload[i[0]] = i[1]
-            response = requests.request(api_method.upper(), url, headers=header, data=payload)
-        else:
-            if api_body_method == 'Text':
-                header['Content-Type'] = 'text/plain'
-            elif api_body_method == 'JavaScript':
-                header['Content-Type'] = 'text/plain'
+            if api_body_method == 'none':
+                pass
+            elif api_body_method == 'form-data' or api_body_method == 'x-www-form-urlencoded':
+                rlist_body = re.findall(r"##(.*?)##",api_body)
+                for i in rlist_body:
+                    api_body = api_body.replace("##"+i+"##", str(eval(i)))
             elif api_body_method == 'Json':
-                header['Content-Type'] = 'application/json'
-            elif api_body_method == 'Html':
-                header['Content-Type'] = 'text/plain'
-            elif api_body_method == 'Xml':
-                header['Content-Type'] = 'text/plain'
-            response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
-        response.encoding = "utf-8"
-        res = response.text
+                rlist_body = re.findall(r"##(.*?)##", api_body)
+                for i in rlist_body:
+                    api_body = api_body.replace("##"+i+"##", repr(eval(i)))
+            else:
+                rlist_body = re.findall(r"##(.*?)##", api_body)
+                for i in rlist_body:
+                    api_body = api_body.replace("##" + i + "##", str(eval(i)))
+
+            print('【host】:',api_host)
+            print('【url】:',api_url)
+            print('【header】:',api_header)
+            print('【method】:',api_method)
+            print('【body_method】:',api_body_method)
+            print('【body】:',api_body)
+
+            #实际发送请求
+            try:
+                header = json.loads(api_header)
+            except:
+                header = eval(api_header)
+            # 拼接完整的url
+            if api_host[-1] == '/' and api_url[0] == '/':  # 都有/
+                url = api_host[:-1] + api_url
+            elif api_host[-1] != '/' and api_url[0] != '/':  # 都没有/
+                url = api_host + '/' + api_url
+            else:
+                url = api_host + api_url
+
+            if api_body_method == 'none':
+                response = requests.request(api_method.upper(), url, headers=header, data={})
+
+            elif api_body_method == 'form-data':
+                files = []
+                payload = {}
+                for i in eval(api_body):
+                    payload[i[0]] = i[1]
+                response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files)
+
+            elif api_body_method == 'x-www-form-urlencoded':
+                header['Content-Type'] = 'application/x-www-form-urlencoded'
+                payload = {}
+                for i in eval(api_body):
+                    payload[i[0]] = i[1]
+                response = requests.request(api_method.upper(), url, headers=header, data=payload)
+            else:
+                if api_body_method == 'Text':
+                    header['Content-Type'] = 'text/plain'
+                elif api_body_method == 'JavaScript':
+                    header['Content-Type'] = 'text/plain'
+                elif api_body_method == 'Json':
+                    header['Content-Type'] = 'application/json'
+                elif api_body_method == 'Html':
+                    header['Content-Type'] = 'text/plain'
+                elif api_body_method == 'Xml':
+                    header['Content-Type'] = 'text/plain'
+                response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
+            response.encoding = "utf-8"
+            res = response.text
         print('【返回体】：',res)
 
         #对返回值res进行提取：
