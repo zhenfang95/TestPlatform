@@ -216,9 +216,9 @@ function showOutput(id, name) {
     <div style="border: 1px solid #ffffff;border-radius: 10px;box-shadow: 2px 2px 12px #aeaeae;padding-left: 30px;width: 500px">
 <p class='attribute'>接口自动化测试平台提供</p>
 <p class='attribute'><strong>注意:</strong> 出现问题请联系管理员！</p>
-<p class='attribute'><strong>报告生成日期:</strong> 2021-01-13 18:12:55</p>
-<p class='attribute'><strong>用例执行时间:</strong> 0:00:00秒</p>
-<p class='attribute'><strong>用例执行结果:</strong> 通过 3,</p>
+<p class='attribute'><strong>报告生成日期:</strong> 2021-02-23 20:13:34</p>
+<p class='attribute'><strong>用例执行时间:</strong> 0:00:06.155673秒</p>
+<p class='attribute'><strong>用例执行结果:</strong> 通过 1, 报错 1</p>
 <p class='attribute'><strong>执行系统:</strong> win32</p>
 
 <br>
@@ -254,13 +254,13 @@ function showOutput(id, name) {
     <td>查看</td>
 </tr>
 
-<tr class='passClass'>
+<tr class='errorClass'>
     <td>MyApp.run_case.Test: 测试类</td>
-    <td>3</td>
-    <td>3</td>
+    <td>2</td>
+    <td>1</td>
     <td>0</td>
-    <td>0</td>
-    <td><button class="wqrf_button" style="background-color: #ffd1e7"  onclick="javascript:showClassDetail('c1',3)">详细</button></td>
+    <td>1</td>
+    <td><button class="wqrf_button" style="background-color: #ffd1e7"  onclick="javascript:showClassDetail('c1',2)">详细</button></td>
 </tr>
 
 <tr id='pt1.1' class='hiddenRow'>
@@ -276,31 +276,20 @@ function showOutput(id, name) {
         </div>
         <pre>
         
-pt1.1: /111/
+pt1.1: 【host】: http://www.baidu.com
+【url】: /111/
+【header】: {'5555': '666666'}
+【method】: post
+【body_method】: none
+【body】: 
+【返回体】： &lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;
+&lt;html&gt;&lt;head&gt;
+&lt;title&gt;404 Not Found&lt;/title&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;h1&gt;Not Found&lt;/h1&gt;
+&lt;p&gt;The requested URL /111/ was not found on this server.&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;
 
-
-         <div id="div100">
-        </div>
-        </pre>
-    </div> <br>
-    <!--css div popup end-->
-    </td>
-</tr>
-
-<tr id='pt1.2' class='hiddenRow'>
-    <td class='none'><div class='testcase'>test_002: 我是新步骤002</div></td>
-    <td colspan='5' align='center'>
-    <!--css div popup start-->
-    <a class="popup_liznk" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.2')" >
-        <button class="wqrf_button" style="width: auto">通过详情</button></a>
-    <div id='div_pt1.2' class="popup_window">
-        <div style='text-align: right; color:red;cursor:pointer'>
-        <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.2').style.display = 'none' " >
-           [x]</a>
-        </div>
-        <pre>
-        
-pt1.2: v1/getPayload
 
 
          <div id="div100">
@@ -311,20 +300,39 @@ pt1.2: v1/getPayload
     </td>
 </tr>
 
-<tr id='pt1.3' class='hiddenRow'>
-    <td class='none'><div class='testcase'>test_003: 我是新步骤003</div></td>
+<tr id='ft1.2' class='none'>
+    <td class='errorCase'><div class='testcase'>test_002: 我是新步骤002</div></td>
     <td colspan='5' align='center'>
     <!--css div popup start-->
-    <a class="popup_liznk" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.3')" >
-        <button class="wqrf_button" style="width: auto">通过详情</button></a>
-    <div id='div_pt1.3' class="popup_window">
+    <a class="popup_liznk" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.2')" >
+        <button class="wqrf_button" style="width: auto">错误详情</button></a>
+    <div id='div_ft1.2' class="popup_window">
         <div style='text-align: right; color:red;cursor:pointer'>
-        <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.3').style.display = 'none' " >
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.2').style.display = 'none' " >
            [x]</a>
         </div>
         <pre>
         
-pt1.3: /pay/2
+ft1.2: 【host】: http://www.baidu.com
+【url】: /pay/2
+【header】: {'Content-Type': 'application/json', '222': 'kkkksdsd1111', '5555': '666666'}
+【method】: post
+【body_method】: x-www-form-urlencoded
+【body】: [["qwe","123"]]
+【返回体】： &lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;
+&lt;html&gt;&lt;head&gt;
+&lt;title&gt;404 Not Found&lt;/title&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;h1&gt;Not Found&lt;/h1&gt;
+&lt;p&gt;The requested URL /pay/2 was not found on this server.&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;
+
+Traceback (most recent call last):
+  File "D:\pyData_test\Github\TestPlatform\ApiTest\MyApp\run_case.py", line 173, in tool
+    Test.demo(self,step)
+  File "D:\pyData_test\Github\TestPlatform\ApiTest\MyApp\run_case.py", line 124, in demo
+    path = i.split('=')[1].lstrip()
+IndexError: list index out of range
 
 
          <div id="div100">
@@ -337,10 +345,10 @@ pt1.3: /pay/2
 
 <tr id='total_row'>
     <td>总计</td>
-    <td>3</td>
-    <td>3</td>
+    <td>2</td>
+    <td>1</td>
     <td>0</td>
-    <td>0</td>
+    <td>1</td>
     <td><button class="wqrf_button" style="background-color: #ffc2e6" onclick='javascript:location.reload()'>刷新</button></td>
 </tr>
 </table>

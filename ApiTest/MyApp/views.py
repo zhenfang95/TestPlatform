@@ -49,7 +49,8 @@ def child_json(eid,oid='',ooid=''):
         project = DB_project.objects.filter(id=oid)[0]
         Cases = DB_cases.objects.filter(project_id=oid)
         apis = DB_apis.objects.filter(project_id=oid)
-        res = {"project":project,"Cases":Cases,"apis":apis}
+        project_header = DB_project_header.objects.filter(project_id=oid)
+        res = {"project":project,"Cases":Cases,"apis":apis,'project_header':project_header}
 
     return res
 
@@ -240,6 +241,7 @@ def Api_send(request):
     ts_header = request.GET['ts_header']
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
+    ts_project_headers = request.GET['ts_project_headers'].split(',')
 
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
@@ -257,6 +259,14 @@ def Api_send(request):
         header = json.loads(ts_header) #请求头
     except:
         return HttpResponse('请求头不符合json格式')
+
+    try:
+        for i in ts_project_headers:
+            project_header = DB_project_header.objects.filter(id=i)[0]
+            header[project_header.key] = project_header.value
+    except:
+        pass
+
     #拼接完整的url
     if ts_host[-1] == '/' and ts_url[0] == '/':   #都有/
         url = ts_host[:-1] + ts_url
@@ -452,6 +462,8 @@ def Api_send_home(request):
             if ts_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
             response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+            print(ts_api_body.encode('utf-8'))
+
 
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
@@ -549,6 +561,7 @@ def save_step(request):
     step_url = request.GET['step_url']
     step_host = request.GET['step_host']
     step_header = request.GET['step_header']
+    ts_project_headers = request.GET['ts_project_headers']
     mock_res = request.GET['mock_res']
     step_body_method = request.GET['step_body_method']
     step_api_body = request.GET['step_api_body']
@@ -564,6 +577,7 @@ def save_step(request):
                                               api_url=step_url,
                                               api_host=step_host,
                                               api_header=step_header,
+                                              public_header = ts_project_headers,
                                               mock_res=mock_res,
                                               api_body_method=step_body_method,
                                               api_body=step_api_body,
