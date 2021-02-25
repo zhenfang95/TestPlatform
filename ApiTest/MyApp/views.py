@@ -634,3 +634,10 @@ def save_project_header(request):
             except:
                 pass
     return HttpResponse('')
+
+#保存用例名字
+def save_case_name(request):
+    id = request.GET['id']
+    name = request.GET['name']
+    DB_cases.objects.filter(id=id).update(name=name)
+    return HttpResponse('')

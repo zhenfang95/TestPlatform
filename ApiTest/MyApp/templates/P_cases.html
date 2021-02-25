@@ -70,16 +70,14 @@
     </div>
     <p style="position: absolute;bottom: 0;left: 5px">
         用例id：<span id="Case_id"></span>
-        用例名称：<span id="Case_name"></span>
+        用例名称：<input type="text" id="Case_name" style="width: 50%" placeholder="可输入新名称">
     </p>
 </div>
 
 <script>
     //关闭左侧div
     function close_left_div(){
-        $("#left_div").animate({right:'100%'},'fast');
-        $("#left_div").css("display","none");
-        close_right_div();
+        document.location.reload()
     }
     function add_new_step() {
         var Case_id = document.getElementById('Case_id').innerText
@@ -140,8 +138,17 @@
             $("#left_div").animate({right:'65%'},'fast');
         }
         document.getElementById('Case_id').innerText = case_id;
-        document.getElementById('Case_name').innerText = case_name;
+        document.getElementById('Case_name').value = case_name;
         refresh_left_div(case_id)
+    }
+    //失去焦点
+    function save_case_name(){
+        $.get('/save_case_name/',{
+            'id':document.getElementById('Case_id').innerText,
+            'name':document.getElementById('Case_name').value,
+        },function (ret){
+
+        })
     }
 </script>
 
