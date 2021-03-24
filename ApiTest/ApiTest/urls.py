@@ -65,4 +65,5 @@ urlpatterns = [
     url(r'^look_report/(?P<eid>.*)/$',look_report),
     url(r'^save_project_header/$',save_project_header),
     url(r'^save_case_name/$',save_case_name),
+    url(r'^save_project_host/$',save_project_host),
 ]

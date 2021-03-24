@@ -19,19 +19,16 @@ def child_json(eid,oid='',ooid=''):
         #返回表中所有数据
         date = DB_home_href.objects.all()
         home_log = DB_apis_log.objects.filter(user_id=oid)[::-1]
+        hosts = DB_host.objects.all()
         # 给前端返回一个字典格式
         if ooid == '':
-            res = {"hrefs":date,"home_log":home_log}
+            res = {"hrefs":date,"home_log":home_log,"hosts":hosts}
         else:
             log = DB_apis_log.objects.filter(id=ooid)[0]
-            res = {"hrefs":date,"home_log":home_log,"log":log}
-
+            res = {"hrefs":date,"home_log":home_log,"log":log,"hosts":hosts}
     if eid == 'project_list.html':
         date = DB_project.objects.all()
         res = {'projects':date}
-    if eid == 'P_cases.html':
-        project = DB_project.objects.filter(id=oid)[0]
-        res = {'project':project}
     if eid == 'P_project_set.html':
         project = DB_project.objects.filter(id=oid)[0]
         res = {'project':project}
@@ -44,14 +41,17 @@ def child_json(eid,oid='',ooid=''):
             except:
                 i.short_url = ''
         project_header = DB_project_header.objects.filter(project_id=oid)
-        res = {'project':project,'apis':apis,'project_header':project_header}
+        hosts = DB_host.objects.all()
+        project_host = DB_project_host.objects.filter(project_id=oid)
+        res = {'project':project,'apis':apis,'project_header':project_header,'hosts':hosts,'project_host':project_host}
     if eid == 'P_cases.html':
         project = DB_project.objects.filter(id=oid)[0]
         Cases = DB_cases.objects.filter(project_id=oid)
         apis = DB_apis.objects.filter(project_id=oid)
         project_header = DB_project_header.objects.filter(project_id=oid)
-        res = {"project":project,"Cases":Cases,"apis":apis,'project_header':project_header}
-
+        hosts = DB_host.objects.all()
+        project_host = DB_project_host.objects.filter(project_id=oid)
+        res = {"project":project,"Cases":Cases,"apis":apis,'project_header':project_header,'hosts':hosts,'project_host':project_host}
     return res
 
 #返回子页面
@@ -242,6 +242,10 @@ def Api_send(request):
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
     ts_project_headers = request.GET['ts_project_headers'].split(',')
+    #处理域名host
+    if ts_host[:4] == '全局域名':
+        project_host_id = ts_host.split('-')[1]
+        ts_host = DB_project_host.objects.filter(id=project_host_id)[0].host
 
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
@@ -306,6 +310,7 @@ def Api_send(request):
 
         #把返回值传递给前端页面
         response.encoding = "utf-8"
+        DB_host.objects.update_or_create(host=ts_host)  #新建或更新这个host
         return HttpResponse(response.text)
     except Exception as e:
         return HttpResponse(str(e))
@@ -468,7 +473,7 @@ def Api_send_home(request):
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
 
-        #DB_host.objects.update_or_create(host=ts_host)
+        DB_host.objects.update_or_create(host=ts_host)
 
         return HttpResponse(response.text)
     except Exception as e:
@@ -640,4 +645,26 @@ def save_case_name(request):
     id = request.GET['id']
     name = request.GET['name']
     DB_cases.objects.filter(id=id).update(name=name)
+    return HttpResponse('')
+
+# 保存项目公共域名
+def save_project_host(request):
+    project_id = request.GET['project_id']
+    req_names = request.GET['req_names']
+    req_hosts = request.GET['req_hosts']
+    req_ids = request.GET['req_ids']
+    names = req_names.split(',')
+    hosts = req_hosts.split(',')
+    ids = req_ids.split(',')
+    for i in range(len(ids)):
+        if names[i] != '':
+            if ids[i] == 'new':
+                DB_project_host.objects.create(project_id=project_id,name=names[i],host=hosts[i])
+            else:
+                DB_project_host.objects.filter(id=ids[i]).update(name=names[i],host=hosts[i])
+        else:
+            try:
+                DB_project_host.objects.filter(id=ids[i]).delete()
+            except:
+                pass
     return HttpResponse('')
