@@ -100,6 +100,18 @@ class Test(unittest.TestCase):
                 for i in eval(api_body):
                     payload[i[0]] = i[1]
                 response = requests.request(api_method.upper(), url, headers=header, data=payload)
+
+            elif api_body_method == 'GraphQL':
+                header['Content-Type'] = 'application/json'
+                query = api_body_method.split('*WQRF*')[0]
+                graphql = api_body_method.split('*WQRF*')[1]
+                try:
+                    eval(graphql)
+                except:
+                    graphql = '{}'
+                payload = '{"query":"%s","variables":%s}' % (query, graphql)
+                response = requests.request(api_body_method.upper(), url, headers=header, data=payload)
+
             else:
                 if api_body_method == 'Text':
                     header['Content-Type'] = 'text/plain'

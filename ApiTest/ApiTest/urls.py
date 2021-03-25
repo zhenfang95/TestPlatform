@@ -66,4 +66,7 @@ urlpatterns = [
     url(r'^save_project_header/$',save_project_header),
     url(r'^save_case_name/$',save_case_name),
     url(r'^save_project_host/$',save_project_host),
+    url(r'^project_get_login/$',project_get_login),
+    url(r'^project_login_save/$',project_login_save),
+    url(r'^project_login_send/$',project_login_send),
 ]
