@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
 from MyApp.views import *
+from MyApp.views_tools import *
 
 #路由控制器，逻辑：库函数('你的url 1'，‘你的后台函数名1 ’)
 urlpatterns = [
@@ -69,4 +70,9 @@ urlpatterns = [
     url(r'^project_get_login/$',project_get_login),
     url(r'^project_login_save/$',project_login_save),
     url(r'^project_login_send/$',project_login_send),
+
+    # ------------------ 小工具 ------------------ #
+    url(r'^tools_zhengjiao/$',zhengjiao),
+    url(r'^zhengjiao_play/$',zhengjiao_play),
+    url(r'^zhengjiao_excel/$',zhengjiao_excel),
 ]

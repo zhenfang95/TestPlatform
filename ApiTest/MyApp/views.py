@@ -200,6 +200,7 @@ def Api_save(request):
     ts_method = request.GET['ts_method']
     ts_url = request.GET['ts_url']
     ts_host = request.GET['ts_host']
+    ts_login = request.GET['ts_login']
     ts_header = request.GET['ts_header']
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
@@ -216,6 +217,7 @@ def Api_save(request):
     DB_apis.objects.filter(id=api_id).update(
         api_method = ts_method,
         api_url = ts_url,
+        api_login = ts_login,
         api_header = ts_header,
         api_host = ts_host,
         body_method = ts_body_method,
@@ -242,6 +244,7 @@ def Api_send(request):
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
     ts_project_headers = request.GET['ts_project_headers'].split(',')
+    ts_login = '52543514'
     #处理域名host
     if ts_host[:4] == '全局域名':
         project_host_id = ts_host.split('-')[1]
@@ -266,8 +269,9 @@ def Api_send(request):
 
     try:
         for i in ts_project_headers:
-            project_header = DB_project_header.objects.filter(id=i)[0]
-            header[project_header.key] = project_header.value
+            if i != '':
+                project_header = DB_project_header.objects.filter(id=i)[0]
+                header[project_header.key] = project_header.value
     except:
         pass
 
