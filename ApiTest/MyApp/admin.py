@@ -1,7 +1,7 @@
 
 """
 django后台密码：123456
-建表后，需同步结构表并生效，依次执行：
+建表或修改表后，需同步结构表并生效，依次执行：
 python manage.py makemigrations
 python manage.py migrate
 """

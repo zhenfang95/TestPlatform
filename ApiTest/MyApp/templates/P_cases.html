@@ -184,9 +184,15 @@
                 <option value="delete">DELETE</option>
             </select>
         </li>
-        <li style="width: -webkit-calc(100% - 105px)">
+        <li style="width: -webkit-calc(100% - 222px)">
             <input id="step_url" style="border-radius: 4px;border: 1px solid #cccccc;
-             padding-left: 10px;width: 100%;height: 35px;" type="text" placeholder="url: 如 /abcd/etfg/" value="">
+             padding-left: 10px;width:100%;height: 35px;" type="text" placeholder="url: 如 /abcd/etfg/" value="">
+        </li>
+        <li>
+            <select name="step_login" id="step_login" style="height: 35px" class="form-control">
+                <option value="no" id="step_login_no">不加登陆态</option>
+                <option value="yes" id="step_login_yes">加登陆态</option>
+            </select>
         </li>
     </ul>
     <div class="input-group" style="margin-top: 45px;margin-left: 5%;width: 90%">
@@ -488,8 +494,21 @@ code:200"></textarea>
         $.get("/get_step/",{
             "step_id":step_id
         },function (ret){
-            var ret = eval(ret)
-            console.log(ret)
+            var ret = eval(ret);
+            console.log(ret);
+
+            //公共请求头
+            if (ret.public_header != null){
+                var project_headers = ret.public_header.split(',');
+                for (var i=0;i<project_headers.length;i++){
+                    try{
+                        document.getElementById('checkbox_'+project_headers[i]).checked='checked';
+                    }catch (e) {
+
+                    }
+                }
+            }
+
             document.getElementById('step_index').value = ret.index;
             document.getElementById('step_name').value = ret.name;
             document.getElementById('step_method').value = ret.api_method;
@@ -502,16 +521,8 @@ code:200"></textarea>
             document.getElementById('assert_zz').value = ret.assert_zz;
             document.getElementById('assert_qz').value = ret.assert_qz;
             document.getElementById('assert_path').value = ret.assert_path;
-            //公共请求头
-            if (ret.public_header != null){
-                var project_headers = ret.public_header.split(',');
-                for (var i=0;i<project_headers.length;i++){
-                    try{
-                        document.getElementById('checkbox_'+project_headers[i]).checked='checked';
-                    }catch (e) {
-
-                    }
-                }
+            if(ret.api_login != null && ret.api_login != ''){
+                document.getElementById('step_login').value = ret.api_login;
             }
 
             // 请求体编码格式
@@ -584,6 +595,7 @@ code:200"></textarea>
             var step_header = document.getElementById('step_header').value ;
             var index = document.getElementById('step_index').value;
             var mock_res = document.getElementById('mock_res').value;
+            var step_login = document.getElementById('step_login').value;
             //公共请求头
             var project_headers = document.getElementById('ts_project_header_li').children;
             var ts_project_headers = [];
@@ -671,7 +683,8 @@ code:200"></textarea>
                 'assert_zz':$("#assert_zz").val(),
                 'assert_qz':$("#assert_qz").val(),
                 'assert_path':$("#assert_path").val(),
-                'ts_project_headers':ts_project_headers.toString()
+                'ts_project_headers':ts_project_headers.toString(),
+                'step_login':step_login
             },function (ret) {
                 case_id = document.getElementById('Case_id').innerText;
                 refresh_left_div(case_id);
@@ -692,7 +705,8 @@ code:200"></textarea>
         document.getElementById('step_url').value = '';
         document.getElementById('step_host').value = '';
         document.getElementById('step_header').value='{}';
-        document.getElementById('mock_res').value= '';
+        document.getElementById('mock_res').value = '';
+        document.getElementById('step_login').value = 'no';
         
         var project_headers = document.getElementById('ts_project_header_li').children;
             for (var i=0;i<project_headers.length;i++){
