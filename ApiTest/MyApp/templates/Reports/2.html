@@ -216,8 +216,8 @@ function showOutput(id, name) {
     <div style="border: 1px solid #ffffff;border-radius: 10px;box-shadow: 2px 2px 12px #aeaeae;padding-left: 30px;width: 500px">
 <p class='attribute'>接口自动化测试平台提供</p>
 <p class='attribute'><strong>注意:</strong> 出现问题请联系管理员！</p>
-<p class='attribute'><strong>报告生成日期:</strong> 2021-03-25 16:06:29</p>
-<p class='attribute'><strong>用例执行时间:</strong> 0:00:06.066460秒</p>
+<p class='attribute'><strong>报告生成日期:</strong> 2021-06-05 23:44:32</p>
+<p class='attribute'><strong>用例执行时间:</strong> 0:00:06.532688秒</p>
 <p class='attribute'><strong>用例执行结果:</strong> 通过 2,</p>
 <p class='attribute'><strong>执行系统:</strong> win32</p>
 
@@ -276,9 +276,15 @@ function showOutput(id, name) {
         </div>
         <pre>
         
-pt1.1: 
-&lt;class 'str'&gt;
-【返回体】： {"err_no":1234560,"errmsg":"哈哈哈","queryid":"999888"}
+pt1.1: 27
+未调用过
+【host】: https://www.baidu.com
+【url】: /sugrec?prod=pc_his&amp;from=pc_web&amp;json=1&amp;sid=32812_1464_33049_33059_33099_33101_32962_32846_22160&amp;hisdata=&amp;_t=1606109114553&amp;req=2&amp;csor=0
+【header】: {'222': 'kkkksdsd1111', 'token': '4Ju7YK7cFu2Ss8IPlqK10As'}
+【method】: get
+【body_method】: none
+【body】: 
+【返回体】： {"err_no":0,"errmsg":"","queryid":"0x6e0bb654934be1"}
 
 
          <div id="div100">
@@ -302,20 +308,20 @@ pt1.1:
         </div>
         <pre>
         
-pt1.2: 27
-&lt;class 'str'&gt;
+pt1.2: 
+已调用过
 【host】: https://www.baidu.com
-【url】: /aaaaa/999888bbbbbb?error=1234560
-【header】: {'aa': '999888', 'bb': '1234560', '222': 'kkkksdsd1111'}
+【url】: /aaaaa/0x6e0bb654934be1bbbbbb?error=0
+【header】: {'aa': '0x6e0bb654934be1', 'bb': '0', 'Content-Type': 'application/json'}
 【method】: get
 【body_method】: Json
-【body】: "aa":'999888',"bb":1234560
+【body】: {"aa": "0x6e0bb654934be1", "bb": 0, "token": "4Ju7YK7cFu2Ss8IPlqK10As"}
 【返回体】： &lt;!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"&gt;
 &lt;html&gt;&lt;head&gt;
 &lt;title&gt;404 Not Found&lt;/title&gt;
 &lt;/head&gt;&lt;body&gt;
 &lt;h1&gt;Not Found&lt;/h1&gt;
-&lt;p&gt;The requested URL /aaaaa/999888bbbbbb was not found on this server.&lt;/p&gt;
+&lt;p&gt;The requested URL /aaaaa/0x6e0bb654934be1bbbbbb was not found on this server.&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;
 
 

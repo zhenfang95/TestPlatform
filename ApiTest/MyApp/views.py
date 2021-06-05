@@ -311,8 +311,8 @@ def Api_send(request):
             payload = {}
             for i in eval(ts_api_body):
                 payload[i[0]] = i[1]
-            # for i in login_res.keys():
-            #     payload[i] = login_res[i]
+            for i in login_res.keys():
+                payload[i] = login_res[i]
             response = requests.request(ts_method.upper(),url,headers=header,data=payload,files=files)
 
         elif ts_body_method == 'x-www-form-urlencoded':
@@ -320,8 +320,8 @@ def Api_send(request):
             payload = {}
             for i in eval(ts_api_body):
                 payload[i[0]] = i[1]
-            # for i in login_res.keys():
-            #     payload[i] = login_res[i]
+            for i in login_res.keys():
+                payload[i] = login_res[i]
             response = requests.request(ts_method.upper(),url,headers=header,data=payload)
 
         elif ts_body_method == 'GraphQL':
@@ -342,10 +342,10 @@ def Api_send(request):
                 header['Content-Type'] = 'text/plain'
             elif ts_body_method == 'Json':
                 #在body加登录态
-                # ts_api_body = json.loads(ts_api_body)
-                # for i in login_res.keys():
-                #     ts_api_body[i] = login_res[i]
-                # ts_api_body = json.dumps(ts_api_body)
+                ts_api_body = json.loads(ts_api_body)
+                for i in login_res.keys():
+                    ts_api_body[i] = login_res[i]
+                ts_api_body = json.dumps(ts_api_body)
                 header['Content-Type'] = 'application/json'
             elif ts_body_method == 'Html':
                 header['Content-Type'] = 'text/plain'
