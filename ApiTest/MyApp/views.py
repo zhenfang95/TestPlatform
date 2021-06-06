@@ -294,35 +294,47 @@ def Api_send(request):
     #url插入
     if '?' not in url:
         url += '?'
-        for i in login_res.keys():
-            url += i+'='+login_res[i]+'&'
+        if type(login_res) == dict:
+            for i in login_res.keys():
+                url += i+'='+login_res[i]+'&'
     else:
-        for i in login_res.keys():
-            url += '&'+i+'='+login_res[i]
+        if type(login_res) == dict:
+            for i in login_res.keys():
+                url += '&'+i+'='+login_res[i]
     #header插入
-    header.update(login_res)
+    if type(login_res) == dict:
+        header.update(login_res)
 
     try:
         if ts_body_method == 'none':
-            response = requests.request(ts_method.upper(), url, headers=header, data={})
+            if type(login_res) == dict:
+                response = requests.request(ts_method.upper(), url, headers=header, data={})
+            else:
+                response = login_res.request(ts_method.upper(), url, headers=header, data={})
 
         elif ts_body_method == 'form-data':
             files = []
             payload = {}
             for i in eval(ts_api_body):
                 payload[i[0]] = i[1]
-            for i in login_res.keys():
-                payload[i] = login_res[i]
-            response = requests.request(ts_method.upper(),url,headers=header,data=payload,files=files)
+            if type(login_res) == dict:
+                for i in login_res.keys():
+                    payload[i] = login_res[i]
+                response = requests.request(ts_method.upper(),url,headers=header,data=payload,files=files)
+            else:
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, files=files)
 
         elif ts_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
             payload = {}
             for i in eval(ts_api_body):
                 payload[i[0]] = i[1]
-            for i in login_res.keys():
-                payload[i] = login_res[i]
-            response = requests.request(ts_method.upper(),url,headers=header,data=payload)
+            if type(login_res) == dict:
+                for i in login_res.keys():
+                    payload[i] = login_res[i]
+                response = requests.request(ts_method.upper(),url,headers=header,data=payload)
+            else:
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload)
 
         elif ts_body_method == 'GraphQL':
             header['Content-Type'] = 'application/json'
@@ -333,7 +345,10 @@ def Api_send(request):
             except:
                 graphql = '{}'
             payload = '{"query":"%s","variables":%s}' % (query, graphql)
-            response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+            if type(login_res) == dict:
+                response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+            else:
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload)
 
         else:
             if ts_body_method == 'Text':
@@ -351,7 +366,10 @@ def Api_send(request):
                 header['Content-Type'] = 'text/plain'
             elif ts_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
-            response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+            if type(login_res) == dict:
+                response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+            else:
+                response = login_res.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
 
         #把返回值传递给前端页面
         response.encoding = "utf-8"
@@ -396,6 +414,8 @@ def error_request(request):
     host = api.api_host
     header = api.api_header
     body_method = api.body_method
+    if header == '':
+        header = '{}'
     try:
         header = json.loads(header) #请求头
     except:
@@ -444,6 +464,8 @@ def Api_send_home(request):
     ts_body_method = request.GET['ts_body_method']
     ts_api_body = request.GET['ts_api_body']
     # 发送请求获取返回值
+    if ts_header == '':
+        ts_header = '{}'
     try:
         header = json.loads(ts_header)  # 处理header
     except:
@@ -759,6 +781,8 @@ def project_login_send(request):
     login_body_method = request.GET['login_body_method']
     login_api_body = request.GET['login_api_body']
     login_response_set = request.GET['login_response_set']
+    if login_header == '':
+        login_header = '{}'
 
     # 第二步，发送请求
     try:
@@ -826,20 +850,25 @@ def project_login_send(request):
         res = response.json()
 
         # 第三步，对返回值进行提取
-        get_res = '' #声明提取结果存放
-        for i in login_response_set.split('\n'):
-            if i == "":
-                continue
-            else:
-                i = i.replace(' ','')
-                key = i.split('=')[0] #拿出key
-                path = i.split('=')[1]  #拿出路径
-                value = res
-                for j in path.split('/')[1:]:
-                    value = value[j]
-                get_res += key + '="' + value +'"\n'
-        # 第四步，返回前端
-        end_res = {"response":response.text,"get_res":get_res}
+
+        #先判断是否是cookie持久化，若是，则不处理
+        if login_response_set == 'cookie':
+            end_res = {"response":response.text,"get_res":'cookie保持会话无需提取返回值'}
+        else:
+            get_res = '' #声明提取结果存放
+            for i in login_response_set.split('\n'):
+                if i == "":
+                    continue
+                else:
+                    i = i.replace(' ','')
+                    key = i.split('=')[0] #拿出key
+                    path = i.split('=')[1]  #拿出路径
+                    value = res
+                    for j in path.split('/')[1:]:
+                        value = value[j]
+                    get_res += key + '="' + value +'"\n'
+            # 第四步，返回前端
+            end_res = {"response":response.text,"get_res":get_res}
         return HttpResponse(json.dumps(end_res),content_type='application/json')
 
     except Exception as e:
@@ -857,6 +886,8 @@ def project_login_send_for_other(project_id):
     login_body_method = login_api.body_method
     login_api_body = login_api.api_body
     login_response_set = login_api.set
+    if login_header == '':
+        login_header = '{}'
     # 第二步，发送请求
     try:
         header = json.loads(login_header) #处理header
@@ -873,20 +904,39 @@ def project_login_send_for_other(project_id):
 
     try:
         if login_body_method == 'none':
-            response = requests.request(login_method.upper(), url, headers=header, data={} )
+            # 先判断是否是cookie持久化，若是，则不处理
+            if login_response_set == 'cookie':
+                a = requests.session()
+                a.request(login_method.upper(), url, headers=header, data={})
+                return a
+            else:
+                response = requests.request(login_method.upper(), url, headers=header, data={})
+
         elif login_body_method == 'form-data':
             files = []
             payload = {}
             for i in eval(login_api_body):
                 payload[i[0]] = i[1]
-            response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files )
+            # 先判断是否是cookie持久化，若是，则不处理
+            if login_response_set == 'cookie':
+                a = requests.session()
+                a.request(login_method.upper(), url, headers=header, data=payload, files=files )
+                return a
+            else:
+                response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files )
 
         elif login_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
             payload = {}
             for i in eval(login_api_body):
                 payload[i[0]] = i[1]
-            response = requests.request(login_method.upper(), url, headers=header, data=payload )
+            # 先判断是否是cookie持久化，若是，则不处理
+            if login_response_set == 'cookie':
+                a = requests.session()
+                a.request(login_method.upper(), url, headers=header, data=payload)
+                return a
+            else:
+                response = requests.request(login_method.upper(), url, headers=header, data=payload)
 
         elif login_body_method == 'GraphQL':
             header['Content-Type'] = 'application/json'
@@ -897,7 +947,13 @@ def project_login_send_for_other(project_id):
             except:
                 graphql = '{}'
             payload = '{"query":"%s","variables":%s}' % (query, graphql)
-            response = requests.request(login_method.upper(), url, headers=header, data=payload )
+            # 先判断是否是cookie持久化，若是，则不处理
+            if login_response_set == 'cookie':
+                a = requests.session()
+                a.request(login_method.upper(), url, headers=header, data=payload )
+                return a
+            else:
+                response = requests.request(login_method.upper(), url, headers=header, data=payload )
 
         else: #这时肯定是raw的五个子选项：
             if login_body_method == 'Text':
@@ -914,7 +970,13 @@ def project_login_send_for_other(project_id):
 
             if login_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
-            response = requests.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'))
+            # 先判断是否是cookie持久化，若是，则不处理
+            if login_response_set == 'cookie':
+                a = requests.session()
+                a.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'))
+                return a
+            else:
+                response = requests.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'))
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
         DB_host.objects.update_or_create(host=login_host)
